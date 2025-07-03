@@ -4,6 +4,7 @@ const YOUTUBE_SEARCH_API = 'https://www.googleapis.com/youtube/v3/search';
 const YOUTUBE_EMBED_URL = 'https://www.youtube.com/embed/';
 // IMPORTANT: Set your API key in a .env file as REACT_APP_YOUTUBE_API_KEY
 const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
+const LOCAL_KEY = 'learning_youtube_state';
 
 const Learning: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -13,6 +14,38 @@ const Learning: React.FC = () => {
   const [error, setError] = useState('');
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
+  const [loadedFromStorage, setLoadedFromStorage] = useState(false);
+
+  // Load state from localStorage on mount (only once)
+  useEffect(() => {
+    const saved = localStorage.getItem(LOCAL_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setQuery(parsed.query || '');
+        setResults(parsed.results || []);
+        setSelectedVideo(parsed.selectedVideo || null);
+        setNextPageToken(parsed.nextPageToken || null);
+        setHasMore(parsed.hasMore || false);
+      } catch {}
+    }
+    setLoadedFromStorage(true);
+  }, []);
+
+  // Save state to localStorage only after initial load
+  useEffect(() => {
+    if (!loadedFromStorage) return;
+    localStorage.setItem(
+      LOCAL_KEY,
+      JSON.stringify({
+        query,
+        results,
+        selectedVideo,
+        nextPageToken,
+        hasMore,
+      })
+    );
+  }, [query, results, selectedVideo, nextPageToken, hasMore, loadedFromStorage]);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastVideoRef = useCallback(
