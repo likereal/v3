@@ -1,4 +1,6 @@
 {
+  "name": "developer-hub",
+  "version": "1.0.0",
   "dependencies": {
     "@types/axios": "^0.9.36",
     "@types/react-router-dom": "^5.3.3",
@@ -6,3 +8,4 @@
     "react-router-dom": "^7.6.3"
   }
 }
+
