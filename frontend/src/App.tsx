@@ -1,5 +1,6 @@
-import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import Docs from './pages/Docs';
@@ -14,25 +15,47 @@ import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import './App.css';
 
+const MIN_WIDTH = 160;
+const MAX_WIDTH = 340;
+const DEFAULT_WIDTH = 220;
+
 const App: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebarOpen');
+    return saved === null ? true : saved === 'true';
+  });
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebarWidth');
+    return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', String(sidebarOpen));
+  }, [sidebarOpen]);
+  useEffect(() => {
+    localStorage.setItem('sidebarWidth', String(sidebarWidth));
+  }, [sidebarWidth]);
+  useEffect(() => {
+    const appLayout = document.querySelector('.app-layout');
+    if (appLayout) {
+      if (window.innerWidth >= 900 && sidebarOpen) {
+        appLayout.setAttribute('style', `--sidebar-width: ${sidebarWidth}px`);
+      } else {
+        appLayout.setAttribute('style', '--sidebar-width: 0px');
+      }
+    }
+  }, [sidebarOpen, sidebarWidth]);
+
   return (
-    <div className="App">
-      <nav className="navbar">
-        <ul>
-          <li><Link to="/profile">Profile</Link></li>
-          <li><Link to="/">Dashboard</Link></li>
-          <li><Link to="/projects">Projects</Link></li>
-          <li><Link to="/docs">Docs</Link></li>
-          <li><Link to="/learning">Learning</Link></li>
-          <li><Link to="/team">Team</Link></li>
-          <li><Link to="/insights">Insights</Link></li>
-          <li><Link to="/search">Search</Link></li>
-          <li><Link to="/integrations">Integrations</Link></li>
-          <li><Link to="/notifications">Notifications</Link></li>
-          <li><Link to="/settings">Settings</Link></li>
-          <li><Link to="/auth">Auth</Link></li>
-        </ul>
-      </nav>
+    <div className="app-layout">
+      <Sidebar
+        open={sidebarOpen}
+        setOpen={setSidebarOpen}
+        width={sidebarWidth}
+        setWidth={setSidebarWidth}
+        minWidth={MIN_WIDTH}
+        maxWidth={MAX_WIDTH}
+      />
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Dashboard />} />

@@ -8,37 +8,28 @@ body {
   min-height: 100vh;
 }
 
-.navbar {
-  background: #232946;
-  padding: 0.5rem 2rem;
-}
-
-.navbar ul {
-  list-style: none;
+.app-layout {
   display: flex;
-  gap: 2rem;
-  margin: 0;
-  padding: 0;
-}
-
-.navbar li {
-  display: inline;
-}
-
-.navbar a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1.1rem;
-  transition: color 0.2s;
-}
-
-.navbar a:hover {
-  color: #eebbc3;
+  min-height: 100vh;
+  background: #111;
 }
 
 .main-content {
+  flex: 1;
   padding: 2rem;
+  margin-left: 0;
+  transition: margin-left 0.3s;
+}
+
+@media (min-width: 900px) {
+  .main-content {
+    margin-left: var(--sidebar-width, 220px);
+  }
+}
+
+/* Remove old navbar styles */
+.navbar, .navbar ul, .navbar li, .navbar a {
+  all: unset;
 }
 
 .dashboard-grid {
