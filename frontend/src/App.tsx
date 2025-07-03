@@ -14,6 +14,7 @@ import Notifications from './pages/Notifications';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import Signup from './pages/Signup';
+import Welcome from './pages/Welcome';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -55,17 +56,20 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <div className="app-layout">
-        <Sidebar
-          open={sidebarOpen}
-          setOpen={setSidebarOpen}
-          width={sidebarWidth}
-          setWidth={setSidebarWidth}
-          minWidth={MIN_WIDTH}
-          maxWidth={MAX_WIDTH}
-        />
+        {isLoggedIn && (
+          <Sidebar
+            open={sidebarOpen}
+            setOpen={setSidebarOpen}
+            width={sidebarWidth}
+            setWidth={setSidebarWidth}
+            minWidth={MIN_WIDTH}
+            maxWidth={MAX_WIDTH}
+          />
+        )}
         <main className="main-content">
           <Routes>
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Welcome />} />
+            <Route path="/auth" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Auth />} />
             <Route path="/signup" element={<Signup />} />
             {isLoggedIn ? (
               <>
@@ -80,10 +84,9 @@ const App: React.FC = () => {
                 <Route path="/integrations" element={<Integrations />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </>
             ) : (
-              <Route path="*" element={<Navigate to="/auth" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             )}
           </Routes>
         </main>
