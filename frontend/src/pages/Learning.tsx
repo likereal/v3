@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 const YOUTUBE_SEARCH_API = 'https://www.googleapis.com/youtube/v3/search';
 const YOUTUBE_EMBED_URL = 'https://www.youtube.com/embed/';
@@ -11,30 +11,58 @@ const Learning: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!query.trim()) return;
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastVideoRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchVideos(query, nextPageToken);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, nextPageToken, query]
+  );
+
+  const fetchVideos = async (search: string, pageToken: string | null = null, isNewSearch = false) => {
     if (!API_KEY) {
       setError('YouTube API key is not set. Please set REACT_APP_YOUTUBE_API_KEY in your .env file.');
       return;
     }
     setLoading(true);
     setError('');
-    setResults([]);
-    setSelectedVideo(null);
     try {
-      const res = await fetch(
-        `${YOUTUBE_SEARCH_API}?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(query)}&key=${API_KEY}`
-      );
+      const url = `${YOUTUBE_SEARCH_API}?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(
+        search
+      )}&key=${API_KEY}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch videos');
       const data = await res.json();
-      setResults(data.items || []);
+      setResults(prev =>
+        isNewSearch ? data.items || [] : [...prev, ...(data.items || [])]
+      );
+      setNextPageToken(data.nextPageToken || null);
+      setHasMore(!!data.nextPageToken);
     } catch (err: any) {
       setError('Could not fetch videos.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!query.trim()) return;
+    setSelectedVideo(null);
+    setResults([]);
+    setNextPageToken(null);
+    setHasMore(false);
+    fetchVideos(query, null, true);
   };
 
   // Helper to format published date
@@ -101,11 +129,80 @@ const Learning: React.FC = () => {
         gap: 32,
         marginTop: 8,
       }}>
-        {results.map((item: any) => {
+        {results.map((item: any, idx: number) => {
           const { videoId } = item.id;
           const { title, channelTitle, publishedAt, thumbnails, channelId } = item.snippet;
-          // Use default avatar for channel (YouTube doesn't provide in search API)
           const channelAvatar = `https://yt3.ggpht.com/ytc/${channelId}=s68-c-k-c0x00ffffff-no-rj`;
+          if (results.length === idx + 1) {
+            // Last item: attach ref for infinite scroll
+            return (
+              <div
+                ref={lastVideoRef}
+                key={videoId}
+                onClick={() => setSelectedVideo(videoId)}
+                style={{
+                  background: '#fff',
+                  borderRadius: 12,
+                  boxShadow: '0 2px 8px #e0e0e0',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  padding: 0,
+                  border: 'none',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  minHeight: 320,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  outline: 'none',
+                }}
+                tabIndex={0}
+                onKeyDown={e => { if (e.key === 'Enter') setSelectedVideo(videoId); }}
+              >
+                <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000' }}>
+                  <img
+                    src={thumbnails.high?.url || thumbnails.medium?.url || thumbnails.default?.url}
+                    alt={title}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderTopLeftRadius: 12,
+                      borderTopRightRadius: 12,
+                      transition: 'filter 0.2s',
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    background: 'rgba(0,0,0,0.7)',
+                    color: '#fff',
+                    borderRadius: 6,
+                    fontSize: 13,
+                    padding: '2px 8px',
+                    zIndex: 2,
+                  }}>{timeAgo(publishedAt)}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', padding: '16px 16px 12px 16px', gap: 12 }}>
+                  <img
+                    src={channelAvatar}
+                    alt={channelTitle}
+                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee', flexShrink: 0 }}
+                    onError={e => (e.currentTarget.src = 'https://www.gstatic.com/youtube/img/originals/promo/ytr-logo-for-search_96x96.png')}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 18, color: '#111', marginBottom: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+                    <div style={{ color: '#666', fontSize: 15, fontWeight: 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{channelTitle}</div>
+                  </div>
+                </div>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: 12, transition: 'box-shadow 0.2s, background 0.2s', pointerEvents: 'none' }} className="yt-card-hover" />
+              </div>
+            );
+          }
+          // Not last item
           return (
             <div
               key={videoId}
@@ -173,6 +270,7 @@ const Learning: React.FC = () => {
           );
         })}
       </div>
+      {loading && <div style={{ textAlign: 'center', margin: 32, color: '#888', fontSize: 18 }}>Loading more videos...</div>}
       <style>{`
         .yt-card-hover:hover {
           box-shadow: 0 4px 24px #bbb;
