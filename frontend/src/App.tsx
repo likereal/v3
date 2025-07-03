@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
@@ -13,7 +13,10 @@ import Integrations from './pages/Integrations';
 import Notifications from './pages/Notifications';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
+import Signup from './pages/Signup';
 import './App.css';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const MIN_WIDTH = 160;
 const MAX_WIDTH = 340;
@@ -28,6 +31,9 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('sidebarWidth');
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
+
+  const { isLoggedIn } = useAuth();
+  console.log('isLoggedIn:', isLoggedIn);
 
   useEffect(() => {
     localStorage.setItem('sidebarOpen', String(sidebarOpen));
@@ -47,32 +53,42 @@ const App: React.FC = () => {
   }, [sidebarOpen, sidebarWidth]);
 
   return (
-    <div className="app-layout">
-      <Sidebar
-        open={sidebarOpen}
-        setOpen={setSidebarOpen}
-        width={sidebarWidth}
-        setWidth={setSidebarWidth}
-        minWidth={MIN_WIDTH}
-        maxWidth={MAX_WIDTH}
-      />
-      <main className="main-content">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/docs" element={<Docs />} />
-          <Route path="/learning" element={<Learning />} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/integrations" element={<Integrations />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-      </main>
-    </div>
+    <AuthProvider>
+      <div className="app-layout">
+        <Sidebar
+          open={sidebarOpen}
+          setOpen={setSidebarOpen}
+          width={sidebarWidth}
+          setWidth={setSidebarWidth}
+          minWidth={MIN_WIDTH}
+          maxWidth={MAX_WIDTH}
+        />
+        <main className="main-content">
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/signup" element={<Signup />} />
+            {isLoggedIn ? (
+              <>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/docs" element={<Docs />} />
+                <Route path="/learning" element={<Learning />} />
+                <Route path="/team" element={<Team />} />
+                <Route path="/insights" element={<Insights />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/integrations" element={<Integrations />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              </>
+            ) : (
+              <Route path="*" element={<Navigate to="/auth" replace />} />
+            )}
+          </Routes>
+        </main>
+      </div>
+    </AuthProvider>
   );
 };
 
