@@ -1,4 +1,10 @@
-{
+
+  "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "react-router-dom": "^7.6.3"
+  }
+}
+=======
     "name": "developer-hub",
     "version": "1.0.0",
     "dependencies": {
@@ -7,3 +13,4 @@
       "socket.io-client": "^4.0.0"
     }
   }
+

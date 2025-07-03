@@ -1,0 +1,23 @@
+.widget {
+  background: #222;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+  padding: 1.5rem;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  color: #fff;
+}
+
+.widget h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #eebbc3;
+  font-size: 1.2rem;
+}
+
+.widget-content {
+  flex: 1;
+  color: #ccc;
+} 
