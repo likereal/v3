@@ -2,16 +2,17 @@ import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore"; // Optional
 
-export async function signup(email, password) {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  // Optionally store user data in Firestore
-  await setDoc(doc(db, "users", user.uid), {
-    email: user.email,
-    createdAt: new Date()
-  });
-  return user;
-}
+export async function signup(email, password, name) {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    // Store user data in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      name: name,
+      createdAt: new Date()
+    });
+    return user;
+  }
 
 export async function login(email, password) {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
