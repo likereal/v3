@@ -1,6 +1,16 @@
-{
+
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
     "react-router-dom": "^7.6.3"
   }
 }
+=======
+    "name": "developer-hub",
+    "version": "1.0.0",
+    "dependencies": {
+      "firebase": "^10.0.0",
+      "axios": "^1.0.0",
+      "socket.io-client": "^4.0.0"
+    }
+  }
+
