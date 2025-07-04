@@ -11,7 +11,6 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  { to: '/profile', label: 'Profile', icon: FaUser },
   { to: '/', label: 'Dashboard', icon: FaTachometerAlt },
   { to: '/projects', label: 'Projects', icon: FaFolderOpen },
   { to: '/docs', label: 'Docs', icon: FaBook },
@@ -22,7 +21,6 @@ const navLinks: NavLink[] = [
   { to: '/integrations', label: 'Integrations', icon: FaPuzzlePiece },
   { to: '/notifications', label: 'Notifications', icon: FaBell },
   { to: '/settings', label: 'Settings', icon: FaCog },
-  { to: '/auth', label: 'Auth', icon: FaSignInAlt },
 ];
 
 type SidebarProps = {

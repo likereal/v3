@@ -1,4 +1,30 @@
 .dashboard-grid {
   margin-top: 2rem;
   background: transparent;
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.jira-issues-list {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #444 #222; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.jira-issues-list::-webkit-scrollbar {
+  width: 6px;
+  background: #222;
+}
+.jira-issues-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+.jira-issues-list::-webkit-scrollbar-thumb:hover {
+  background: #666;
 } 
