@@ -326,10 +326,151 @@ const Dashboard: React.FC = () => {
           )}
         </Widget>
         <Widget title="Documentation">
-          <p>Access project docs, wikis, and knowledge base.</p>
+          {(() => {
+            let lastDocs = null;
+            try {
+              const stored = localStorage.getItem('last_docs_read');
+              if (stored) lastDocs = JSON.parse(stored);
+            } catch {}
+            return (
+              <div>
+                <div style={{ marginBottom: 8 }}>
+                  <b>Access project docs, wikis, and knowledge base.</b>
+                </div>
+                {lastDocs ? (
+                  <div style={{ color: '#eebbc3', marginBottom: 8 }}>
+                    <b>Last read:</b> {lastDocs.url ? (
+                      <a href={lastDocs.url} target="_blank" rel="noopener noreferrer" style={{ color: '#eebbc3', textDecoration: 'underline' }}>{lastDocs.title}</a>
+                    ) : lastDocs.title}
+                    <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                      {lastDocs.date ? `on ${new Date(lastDocs.date).toLocaleString()}` : ''}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#888', marginBottom: 8 }}>
+                    No recent docs read.
+                  </div>
+                )}
+                <button
+                  onClick={() => navigate('/docs')}
+                  style={{ padding: '0.7em 2em', borderRadius: 6, background: '#eebbc3', color: '#232946', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                >
+                  Go to Docs
+                </button>
+              </div>
+            );
+          })()}
         </Widget>
         <Widget title="Learning Resources">
-          <p>Find relevant learning modules and bookmarks.</p>
+          {(() => {
+            // Progress bar logic
+            let hoursWatched = 0;
+            try {
+              const stored = localStorage.getItem('learning_hours_watched');
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.date === new Date().toISOString().slice(0, 10)) {
+                  hoursWatched = parsed.hours || 0;
+                }
+              }
+            } catch {}
+            if (isNaN(hoursWatched)) hoursWatched = 0;
+            const cappedHours = Math.min(hoursWatched, 1);
+            const percent = Math.round((cappedHours / 1) * 100);
+
+            // Try to load last learning state from localStorage
+            let learningState: any = null;
+            try {
+              const saved = localStorage.getItem('learning_youtube_state');
+              if (saved) learningState = JSON.parse(saved);
+            } catch {}
+            const hasSearch = learningState && learningState.query && learningState.results && learningState.results.length > 0;
+            const lastQuery = hasSearch ? learningState.query : '';
+            const lastResults = hasSearch ? learningState.results.slice(0, 3) : [];
+            const lastVideoId = learningState && learningState.selectedVideo;
+            return (
+              <div>
+                <div style={{ marginBottom: 12 }}>
+                  <b>Learning Progress:</b>
+                  <div style={{ marginTop: 6, marginBottom: 4, background: '#232946', borderRadius: 8, height: 18, width: '100%', position: 'relative', overflow: 'hidden', boxShadow: '0 1px 4px #181818' }}>
+                    <div style={{ width: `${percent}%`, height: '100%', background: '#eebbc3', borderRadius: 8, transition: 'width 0.5s' }}></div>
+                    <div style={{ position: 'absolute', left: 12, top: 0, height: '100%', display: 'flex', alignItems: 'center', color: '#232946', fontWeight: 700, fontSize: '0.95em' }}>{cappedHours.toFixed(2)} / 1 hr</div>
+                  </div>
+                </div>
+                {hasSearch ? (
+                  <>
+                    <div style={{ marginBottom: 8 }}>
+                      <b>Last searched:</b> <span style={{ color: '#eebbc3' }}>{lastQuery}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                      {lastResults.map((item: any) => {
+                        const { videoId } = item.id || {};
+                        const { title, thumbnails } = item.snippet || {};
+                        return (
+                          <div key={videoId} style={{ width: 120, cursor: 'pointer' }}
+                            onClick={() => {
+                              navigate('/learning');
+                              setTimeout(() => {
+                                try {
+                                  const saved = localStorage.getItem('learning_youtube_state');
+                                  if (saved) {
+                                    const parsed = JSON.parse(saved);
+                                    parsed.selectedVideo = videoId;
+                                    localStorage.setItem('learning_youtube_state', JSON.stringify(parsed));
+                                  }
+                                } catch {}
+                              }, 100);
+                            }}
+                          >
+                            <img src={thumbnails?.high?.url || thumbnails?.default?.url} alt={title} style={{ width: '100%', borderRadius: 8, marginBottom: 4 }} />
+                            <div style={{ fontSize: '0.85em', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {lastVideoId && (
+                        <button
+                          onClick={() => {
+                            navigate('/learning');
+                            setTimeout(() => {
+                              try {
+                                const saved = localStorage.getItem('learning_youtube_state');
+                                if (saved) {
+                                  const parsed = JSON.parse(saved);
+                                  parsed.selectedVideo = lastVideoId;
+                                  localStorage.setItem('learning_youtube_state', JSON.stringify(parsed));
+                                }
+                              } catch {}
+                            }, 100);
+                          }}
+                          style={{ padding: '0.5em 1.2em', borderRadius: 6, background: '#eebbc3', color: '#232946', fontWeight: 600, border: 'none', cursor: 'pointer', fontSize: '0.95em' }}
+                        >
+                          Resume Video
+                        </button>
+                      )}
+                      <button
+                        onClick={() => navigate('/learning')}
+                        style={{ padding: '0.5em 1.2em', borderRadius: 6, background: '#232946', color: '#eebbc3', fontWeight: 600, border: 'none', cursor: 'pointer', fontSize: '0.95em' }}
+                      >
+                        Continue Learning
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ color: '#fff' }}>
+                    <div style={{ marginBottom: 10 }}>Search for learning videos and resources to boost your skills.</div>
+                    <button
+                      onClick={() => navigate('/learning')}
+                      style={{ padding: '0.7em 2em', borderRadius: 6, background: '#eebbc3', color: '#232946', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                    >
+                      Go to Learning
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </Widget>
         <Widget title="Team Progress">
           <p>Track team activity, roles, and progress.</p>

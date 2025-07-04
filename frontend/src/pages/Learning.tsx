@@ -5,6 +5,24 @@ const YOUTUBE_EMBED_URL = 'https://www.youtube.com/embed/';
 // IMPORTANT: Set your API key in a .env file as REACT_APP_YOUTUBE_API_KEY
 const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 const LOCAL_KEY = 'learning_youtube_state';
+const HOURS_KEY = 'learning_hours_watched';
+const getToday = () => new Date().toISOString().slice(0, 10);
+
+function getTodayHours() {
+  const stored = localStorage.getItem(HOURS_KEY);
+  if (!stored) return 0;
+  try {
+    const parsed = JSON.parse(stored);
+    if (parsed.date === getToday()) return parsed.hours || 0;
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+function setTodayHours(hours: number) {
+  localStorage.setItem(HOURS_KEY, JSON.stringify({ date: getToday(), hours }));
+}
 
 const Learning: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -15,6 +33,9 @@ const Learning: React.FC = () => {
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadedFromStorage, setLoadedFromStorage] = useState(false);
+  const playerRef = useRef<any>(null);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [lastTrackedTime, setLastTrackedTime] = useState(0);
 
   // Load state from localStorage on mount (only once)
   useEffect(() => {
@@ -46,6 +67,79 @@ const Learning: React.FC = () => {
       })
     );
   }, [query, results, selectedVideo, nextPageToken, hasMore, loadedFromStorage]);
+
+  // --- YouTube IFrame API watch time tracking ---
+  // interval ref for cleanup
+  const intervalRef = useRef<any>(null);
+
+  // Player state change handler
+  const onPlayerStateChange = useCallback((event: any) => {
+    if (event.data === 1) { // playing
+      trackTime();
+    } else if (event.data === 2 || event.data === 0) { // paused or ended
+      stopTracking();
+    }
+  }, [lastTrackedTime]);
+
+  // Track time function
+  const trackTime = useCallback(() => {
+    stopTracking();
+    intervalRef.current = setInterval(() => {
+      if (playerRef.current && playerRef.current.getCurrentTime) {
+        const current = playerRef.current.getCurrentTime();
+        const delta = current - lastTrackedTime;
+        if (delta > 0 && delta < 10) { // avoid big jumps
+          let hours = getTodayHours();
+          hours += delta / 3600;
+          setTodayHours(hours);
+        }
+        setLastTrackedTime(current);
+      }
+    }, 5000);
+  }, [lastTrackedTime]);
+
+  // Stop tracking function
+  const stopTracking = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  }, []);
+
+  // Create player function for YouTube IFrame API
+  const createPlayer = useCallback(() => {
+    if (playerRef.current) {
+      playerRef.current.destroy();
+    }
+    playerRef.current = new (window as any).YT.Player('learning-yt-iframe', {
+      videoId: selectedVideo, // Pass the selected video ID to the player
+      events: {
+        onReady: () => setPlayerReady(true),
+        onStateChange: onPlayerStateChange,
+      },
+    });
+  }, [onPlayerStateChange, selectedVideo]);
+
+  // Load YouTube IFrame API and create player
+  useEffect(() => {
+    if (!selectedVideo) return;
+    // If API already loaded, skip
+    if ((window as any).YT && (window as any).YT.Player) {
+      createPlayer();
+    } else {
+      // Load script
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.body.appendChild(tag);
+      (window as any).onYouTubeIframeAPIReady = createPlayer;
+    }
+    return () => {
+      stopTracking();
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVideo, createPlayer, stopTracking]);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastVideoRef = useCallback(
@@ -144,16 +238,9 @@ const Learning: React.FC = () => {
       {error && <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
       {selectedVideo && (
         <div style={{ marginBottom: 32 }}>
-          <iframe
-            width="100%"
-            height="480"
-            src={`${YOUTUBE_EMBED_URL}${selectedVideo}`}
-            title="Learning Video Player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ borderRadius: 12, boxShadow: '0 2px 16px #e0e0e0' }}
-          ></iframe>
+          <div style={{ position: 'relative' }}>
+            <div id="learning-yt-iframe" style={{ width: '100%', height: 480, borderRadius: 12, boxShadow: '0 2px 16px #e0e0e0', overflow: 'hidden' }}></div>
+          </div>
         </div>
       )}
       <div style={{

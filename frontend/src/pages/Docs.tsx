@@ -104,6 +104,15 @@ const Docs: React.FC = () => {
                   textDecoration: 'underline',
                   wordBreak: 'break-all',
                 }}
+                onClick={() => {
+                  try {
+                    localStorage.setItem('last_docs_read', JSON.stringify({
+                      title: doc.title,
+                      url: doc.url,
+                      date: new Date().toISOString(),
+                    }));
+                  } catch {}
+                }}
               >
                 {doc.title}
               </a>
