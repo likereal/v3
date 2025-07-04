@@ -749,6 +749,57 @@ app.get('/api/webdocs', async (req, res) => {
   }
 });
 
+// Web Docs Search Endpoint
+app.get('/api/webdocs', async (req, res) => {
+  const query = req.query.q;
+  if (!query) {
+    return res.status(400).json({ error: 'Missing query parameter' });
+  }
+
+  const endpoint = 'https://api.duckduckgo.com/';
+
+  try {
+    const response = await axios.get(endpoint, {
+      params: { q: query, format: 'json', no_redirect: 1, no_html: 1 },
+    });
+    const data = response.data;
+    const docs = [];
+    // Main result
+    if (data.Heading && data.AbstractURL) {
+      docs.push({
+        title: data.Heading,
+        description: data.Abstract || data.AbstractText || '',
+        url: data.AbstractURL,
+      });
+    }
+    // Related topics
+    if (Array.isArray(data.RelatedTopics)) {
+      data.RelatedTopics.forEach(topic => {
+        if (topic.Text && topic.FirstURL) {
+          docs.push({
+            title: topic.Text,
+            description: '',
+            url: topic.FirstURL,
+          });
+        } else if (Array.isArray(topic.Topics)) {
+          topic.Topics.forEach(subtopic => {
+            if (subtopic.Text && subtopic.FirstURL) {
+              docs.push({
+                title: subtopic.Text,
+                description: '',
+                url: subtopic.FirstURL,
+              });
+            }
+          });
+        }
+      });
+    }
+    res.json({ docs });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch web docs', details: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
