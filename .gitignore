@@ -1,2 +1,5 @@
 node_modules
 
+.env
+
+/backend/v3hackathon-firebase-adminsdk-fbsvc-365348b3fc.json
