@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUser, FaTachometerAlt, FaFolderOpen, FaBook, FaGraduationCap, FaUsers, FaChartLine, FaSearch, FaPuzzlePiece, FaBell, FaCog, FaSignInAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaTachometerAlt, FaFolderOpen, FaBook, FaGraduationCap, FaUsers, FaChartLine, FaSearch, FaPuzzlePiece, FaBell, FaCog, FaSignInAlt } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 import './Sidebar.css';
-import { useAuth } from '../context/AuthContext';
 
 type NavLink = {
   to: string;
@@ -37,7 +36,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen, width, setWidth, minWi
   const [resizing, setResizing] = useState(false);
   const location = useLocation();
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const { logout } = useAuth();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -124,38 +122,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen, width, setWidth, minWi
             onMouseDown={() => setResizing(true)}
             title="Resize sidebar"
           />
-        )}
-        {open && (
-          <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            padding: '16px',
-            borderTop: '1px solid #232946'
-          }}>
-            <button
-              onClick={logout}
-              style={{
-                width: '100%',
-                background: '#e74c3c',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '12px',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <span style={{ fontSize: '16px' }}></span>
-              <span>Logout</span>
-            </button>
-          </div>
         )}
       </div>
       {open && !isDesktop && <div className="sidebar-backdrop" onClick={() => setOpen(false)} />}
