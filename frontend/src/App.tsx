@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline, AppBar, Toolbar, IconButton, Typography, Box, Drawer, Menu, MenuItem, Avatar, Button, List, ListItem, ListItemIcon, ListItemText, Divider, ListItemButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -29,6 +33,13 @@ import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
+
+import Signup from './pages/Signup';
+import Welcome from './pages/Welcome';
+import './App.css';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
 
 const drawerWidth = 240;
 const darkTheme = createTheme({
@@ -61,6 +72,67 @@ const App: React.FC = () => {
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+
+  const { isLoggedIn } = useAuth();
+  console.log('isLoggedIn:', isLoggedIn);
+
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', String(sidebarOpen));
+  }, [sidebarOpen]);
+  useEffect(() => {
+    localStorage.setItem('sidebarWidth', String(sidebarWidth));
+  }, [sidebarWidth]);
+  useEffect(() => {
+    const appLayout = document.querySelector('.app-layout');
+    if (appLayout) {
+      if (window.innerWidth >= 900 && sidebarOpen) {
+        appLayout.setAttribute('style', `--sidebar-width: ${sidebarWidth}px`);
+      } else {
+        appLayout.setAttribute('style', '--sidebar-width: 0px');
+      }
+    }
+  }, [sidebarOpen, sidebarWidth]);
+
+  return (
+    <AuthProvider>
+      <div className="app-layout">
+        {isLoggedIn && (
+          <Sidebar
+            open={sidebarOpen}
+            setOpen={setSidebarOpen}
+            width={sidebarWidth}
+            setWidth={setSidebarWidth}
+            minWidth={MIN_WIDTH}
+            maxWidth={MAX_WIDTH}
+          />
+        )}
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Welcome />} />
+            <Route path="/auth" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Auth />} />
+            <Route path="/signup" element={<Signup />} />
+            {isLoggedIn ? (
+              <>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/docs" element={<Docs />} />
+                <Route path="/learning" element={<Learning />} />
+                <Route path="/team" element={<Team />} />
+                <Route path="/insights" element={<Insights />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/integrations" element={<Integrations />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/settings" element={<Settings />} />
+              </>
+            ) : (
+              <Route path="*" element={<Navigate to="/" replace />} />
+            )}
+          </Routes>
+        </main>
+      </div>
+    </AuthProvider>
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
@@ -166,6 +238,7 @@ const App: React.FC = () => {
         </Box>
       </Box>
     </ThemeProvider>
+
   );
 };
 

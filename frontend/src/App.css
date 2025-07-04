@@ -16,13 +16,25 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 2rem;
+  padding: 0;
   margin-left: 0;
   transition: margin-left 0.3s;
+  width: 100%;
+}
+
+/* Only apply sidebar margin when user is logged in and sidebar is visible */
+.app-layout:has(.sidebar) .main-content {
+  margin-left: var(--sidebar-width, 220px);
+}
+
+/* For pages without sidebar (welcome, auth), ensure full width */
+.main-content > * {
+  width: 100%;
+  min-height: 100vh;
 }
 
 @media (min-width: 900px) {
-  .main-content {
+  .app-layout:has(.sidebar) .main-content {
     margin-left: var(--sidebar-width, 220px);
   }
 }
