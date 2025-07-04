@@ -1,4 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+import { auth } from '../firebase'; // Make sure this is the correct path
+import { onAuthStateChanged, User } from 'firebase/auth';
+
+
+  
+
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import axios from 'axios';
@@ -25,6 +32,8 @@ export type UserInfo = {
 };
 
 type AuthContextType = {
+  isLoggedIn: boolean;
+
   user: User | null;
   userInfo: UserInfo | null;
   idToken: string | null;
@@ -39,12 +48,29 @@ type AuthContextType = {
   disconnectJira: () => Promise<void>;
   fetchJiraUserInfo: () => Promise<void>;
   refreshUserInfo: () => Promise<void>;
+
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+
+  const isLoggedIn = !!user;
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const login = () => {};  // Not needed, handled by Firebase
+  const logout = () => { auth.signOut(); };
+
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [idToken, setIdToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,6 +215,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, userInfo, idToken, loading, error, login, loginWithGoogle, logout, connectGithub, connectJira, disconnectGithub, disconnectJira, fetchJiraUserInfo, refreshUserInfo }}>
+
       {children}
     </AuthContext.Provider>
   );
