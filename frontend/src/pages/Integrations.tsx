@@ -198,13 +198,13 @@ const Integrations: React.FC = () => {
   };
 
   return (
-    <div className="integrations-root">
-      <h2>Integrations</h2>
-      <div className="integrations-cards">
+    <div className="integrations-page integrations-root" style={{ background: '#1c1c27', borderRadius: 14, boxShadow: '0 2px 12px #181818', padding: 18, color: '#fff', maxWidth: 950, margin: '28px auto' }}>
+      <h2 style={{ color: '#eebbc3', fontWeight: 700, fontSize: 22, marginBottom: 10 }}>Integrations</h2>
+      <div className="integrations-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* GitHub Card */}
-        <div className="integration-card">
+        <div className="integration-card" style={{ background: '#232946', borderRadius: 8, boxShadow: '0 2px 4px #181818', padding: 18, color: '#fff', border: '1px solid #232946', fontSize: 13 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3 style={{ margin: 0 }}>GitHub Integration</h3>
+            <h3 style={{ margin: 0, color: '#eebbc3', fontWeight: 600, fontSize: 14, lineHeight: 1.2 }}>GitHub Integration</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{
                 background: userInfo?.github ? '#43d17a' : '#e84545',
@@ -212,7 +212,9 @@ const Integrations: React.FC = () => {
                 borderRadius: 8,
                 padding: '0.25em 0.75em',
                 fontSize: '0.95em',
-                fontWeight: 600
+                fontWeight: 600,
+                border: '1.5px solid #232946',
+                boxShadow: '0 2px 8px #181818'
               }}>
                 {userInfo?.github ? 'Connected' : 'Not Connected'}
               </span>
@@ -220,13 +222,16 @@ const Integrations: React.FC = () => {
                 <button 
                   onClick={disconnectGithub}
                   style={{
-                    background: '#dc3545',
+                    background: '#e84545',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: 4,
+                    borderRadius: 6,
                     padding: '0.25em 0.75em',
                     cursor: 'pointer',
-                    fontSize: '0.9em'
+                    fontSize: '0.9em',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 8px #232946',
+                    transition: 'background 0.18s, color 0.18s'
                   }}
                 >
                   Disconnect
@@ -235,13 +240,16 @@ const Integrations: React.FC = () => {
                 <button
                   onClick={() => { if (!userInfo) { navigate('/auth'); } else { connectGithub(); } }}
                   style={{
-                    background: '#181818',
-                    color: '#eebbc3',
+                    background: '#eebbc3',
+                    color: '#232946',
                     border: 'none',
-                    borderRadius: 4,
+                    borderRadius: 6,
                     padding: '0.25em 0.75em',
                     cursor: 'pointer',
-                    fontSize: '0.9em'
+                    fontSize: '0.9em',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 8px #232946',
+                    transition: 'background 0.18s, color 0.18s'
                   }}
                 >
                   Connect
@@ -251,13 +259,13 @@ const Integrations: React.FC = () => {
           </div>
 
           {!userInfo?.github ? (
-            <p style={{ color: '#b8c1ec', marginBottom: '1rem' }}>
+            <p style={{ color: '#b8c1ec', marginBottom: '0.5rem', fontSize: 12 }}>
               Connect your GitHub account to access repositories and issues.
             </p>
           ) : (
             <>
               {userInfo.github && (
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', padding: '1rem', background: '#1a1a2e', borderRadius: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', padding: '0.7rem', background: '#232946', borderRadius: 6, border: '1px solid #232946', color: '#fff' }}>
                   {userInfo.github.avatar_url && (
                     <img src={userInfo.github.avatar_url} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%', marginRight: 12 }} />
                   )}
@@ -265,7 +273,7 @@ const Integrations: React.FC = () => {
                     <div><b>{userInfo.github.login || userInfo.github.name}</b></div>
                     <div style={{ fontSize: '0.9em', color: '#b8c1ec' }}>{userInfo.github.email}</div>
                     {userInfo.github.html_url && (
-                      <a href={userInfo.github.html_url} target="_blank" rel="noopener noreferrer" style={{ color: '#eebbc3', fontSize: '0.9em' }}>View Profile</a>
+                      <a href={userInfo.github.html_url} target="_blank" rel="noopener noreferrer" style={{ color: '#eebbc3', fontSize: '0.9em', textDecoration: 'underline' }}>View Profile</a>
                     )}
                   </div>
                 </div>
@@ -273,24 +281,24 @@ const Integrations: React.FC = () => {
               
               {githubError && <div style={{ color: 'red', marginBottom: '1rem' }}>Error: {githubError}</div>}
               
-              <form onSubmit={handleGithubConnect}>
-                <div>
-                  <label>Owner: </label>
-                  <input value={owner} onChange={e => setOwner(e.target.value)} placeholder="e.g. octocat" />
+              <form onSubmit={handleGithubConnect} style={{ marginTop: 4 }}>
+                <div style={{ marginBottom: 4 }}>
+                  <label style={{ color: '#b8c1ec', marginRight: 8 }}>Owner:</label>
+                  <input value={owner} onChange={e => setOwner(e.target.value)} placeholder="e.g. octocat" style={{ background: '#181818', color: '#fff', border: '1px solid #b8c1ec', borderRadius: 5, padding: '4px 7px', fontSize: 12 }} />
                 </div>
-                <div>
-                  <label>Repo: </label>
-                  <input value={repo} onChange={e => setRepo(e.target.value)} placeholder="e.g. Hello-World" />
+                <div style={{ marginBottom: 4 }}>
+                  <label style={{ color: '#b8c1ec', marginRight: 8 }}>Repo:</label>
+                  <input value={repo} onChange={e => setRepo(e.target.value)} placeholder="e.g. Hello-World" style={{ background: '#181818', color: '#fff', border: '1px solid #b8c1ec', borderRadius: 5, padding: '4px 7px', fontSize: 12 }} />
                 </div>
-                <div>
-                  <label>Username: </label>
-                  <input value={githubUsername} onChange={e => setGithubUsername(e.target.value)} placeholder="(optional, leave blank to use server default)" />
+                <div style={{ marginBottom: 4 }}>
+                  <label style={{ color: '#b8c1ec', marginRight: 8 }}>Username:</label>
+                  <input value={githubUsername} onChange={e => setGithubUsername(e.target.value)} placeholder="(optional, leave blank to use server default)" style={{ background: '#181818', color: '#fff', border: '1px solid #b8c1ec', borderRadius: 5, padding: '4px 7px', fontSize: 12 }} />
                 </div>
-                <div>
-                  <label>Token: </label>
-                  <input value={githubToken} onChange={e => setGithubToken(e.target.value)} placeholder="(optional, leave blank to use server default)" type="password" />
+                <div style={{ marginBottom: 4 }}>
+                  <label style={{ color: '#b8c1ec', marginRight: 8 }}>Token:</label>
+                  <input value={githubToken} onChange={e => setGithubToken(e.target.value)} placeholder="(optional, leave blank to use server default)" type="password" style={{ background: '#181818', color: '#fff', border: '1px solid #b8c1ec', borderRadius: 5, padding: '4px 7px', fontSize: 12 }} />
                 </div>
-                <button type="submit">Connect to GitHub</button>
+                <button type="submit" style={{ background: '#eebbc3', color: '#232946', border: 'none', borderRadius: 5, padding: '4px 10px', fontWeight: 700, fontSize: 12, boxShadow: '0 2px 4px #232946', transition: 'background 0.18s, color 0.18s' }}>Connect to GitHub</button>
               </form>
               
               {githubConnected && <GitHubIssuesWidget owner={owner} repo={repo} error={githubError} />}
@@ -299,9 +307,9 @@ const Integrations: React.FC = () => {
         </div>
 
         {/* Jira Card */}
-        <div className="integration-card">
+        <div className="integration-card" style={{ background: '#232946', borderRadius: 8, boxShadow: '0 2px 4px #181818', padding: 18, color: '#fff', border: '1px solid #232946', fontSize: 13 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3 style={{ margin: 0 }}>Jira Integration</h3>
+            <h3 style={{ margin: 0, color: '#eebbc3', fontWeight: 600, fontSize: 14, lineHeight: 1.2 }}>Jira Integration</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{
                 background: userInfo?.jira ? '#43d17a' : '#e84545',
@@ -309,7 +317,9 @@ const Integrations: React.FC = () => {
                 borderRadius: 8,
                 padding: '0.25em 0.75em',
                 fontSize: '0.95em',
-                fontWeight: 600
+                fontWeight: 600,
+                border: '1.5px solid #232946',
+                boxShadow: '0 2px 8px #181818'
               }}>
                 {userInfo?.jira ? 'Connected' : 'Not Connected'}
               </span>
@@ -317,13 +327,16 @@ const Integrations: React.FC = () => {
                 <button 
                   onClick={disconnectJira}
                   style={{
-                    background: '#dc3545',
+                    background: '#e84545',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: 4,
+                    borderRadius: 6,
                     padding: '0.25em 0.75em',
                     cursor: 'pointer',
-                    fontSize: '0.9em'
+                    fontSize: '0.9em',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 8px #232946',
+                    transition: 'background 0.18s, color 0.18s'
                   }}
                 >
                   Disconnect
@@ -332,13 +345,16 @@ const Integrations: React.FC = () => {
                 <button
                   onClick={() => { if (!userInfo) { navigate('/auth'); } else { connectJira(); } }}
                   style={{
-                    background: '#181818',
-                    color: '#eebbc3',
+                    background: '#eebbc3',
+                    color: '#232946',
                     border: 'none',
-                    borderRadius: 4,
+                    borderRadius: 6,
                     padding: '0.25em 0.75em',
                     cursor: 'pointer',
-                    fontSize: '0.9em'
+                    fontSize: '0.9em',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 8px #232946',
+                    transition: 'background 0.18s, color 0.18s'
                   }}
                 >
                   Connect
@@ -348,13 +364,13 @@ const Integrations: React.FC = () => {
           </div>
 
           {!userInfo?.jira ? (
-            <p style={{ color: '#b8c1ec', marginBottom: '1rem' }}>
+            <p style={{ color: '#b8c1ec', marginBottom: '0.3rem', fontSize: 11 }}>
               Connect your Jira account to access projects and issues.
             </p>
           ) : (
             <>
               {userInfo.jira && (
-                <div style={{ marginBottom: '1rem', padding: '1rem', background: '#1a1a2e', borderRadius: 8 }}>
+                <div style={{ marginBottom: '0.5rem', padding: '8px', background: '#232946', borderRadius: 6, border: '1px solid #232946', color: '#fff' }}>
                   <div><b>{userInfo.jira.displayName || userInfo.jira.name}</b></div>
                   <div style={{ fontSize: '0.9em', color: '#b8c1ec' }}>{userInfo.jira.email}</div>
                   <div style={{ fontSize: '0.9em', color: '#b8c1ec' }}>Account ID: {userInfo.jira.account_id}</div>
@@ -362,16 +378,18 @@ const Integrations: React.FC = () => {
               )}
               
               <div style={{ 
-                marginBottom: '1rem', 
-                padding: '12px', 
-                background: '#1a3a1a', 
-                borderRadius: '6px',
-                border: '1px solid #43d17a'
+                marginBottom: '0.5rem', 
+                padding: '8px', 
+                background: '#181818', 
+                borderRadius: '4px',
+                border: '1px solid #43d17a',
+                color: '#43d17a',
+                fontWeight: 600
               }}>
-                <div style={{ fontSize: '0.9em', fontWeight: '600', marginBottom: '4px', color: '#43d17a' }}>
+                <div style={{ fontSize: '0.75em', fontWeight: '600', marginBottom: '1px' }}>
                   💡 Project Selection
                 </div>
-                <div style={{ fontSize: '0.8em', color: '#b8c1ec' }}>
+                <div style={{ fontSize: '0.7em', color: '#b8c1ec', fontWeight: 400 }}>
                   Select a project below to filter issues in the Dashboard and Notifications tabs. 
                   If no project is selected, all your assigned issues will be shown.
                 </div>

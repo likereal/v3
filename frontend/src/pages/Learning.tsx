@@ -122,20 +122,20 @@ const Learning: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: '40px auto', background: '#f5faff', borderRadius: 12, boxShadow: '0 2px 16px #e0e0e0', padding: 32 }}>
-      <h2 style={{ fontWeight: 700, fontSize: 32, color: '#222', marginBottom: 8 }}>Learning Resources</h2>
-      <p style={{ color: '#444', marginBottom: 24 }}>Search for learning videos below:</p>
-      <form onSubmit={handleSearch} style={{ display: 'flex', marginBottom: 32 }}>
+    <div className="learning-page" style={{ maxWidth: 1100, margin: '40px auto', background: '#1c1c27', borderRadius: 16, boxShadow: '0 2px 16px #181818', padding: 32, color: '#fff' }}>
+      <h2 style={{ fontWeight: 700, fontSize: 32, color: '#eebbc3', marginBottom: 8 }}>Learning Resources</h2>
+      <p style={{ color: '#b8c1ec', marginBottom: 24 }}>Search for learning videos below:</p>
+      <form onSubmit={handleSearch} style={{ display: 'flex', marginBottom: 32, background: '#232946', borderRadius: 8, padding: 8 }}>
         <input
           type="text"
           placeholder="Search learning videos..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          style={{ flex: 1, padding: 14, borderRadius: 8, border: '1.5px solid #bbb', fontSize: 18, background: '#fff', marginRight: 16 }}
+          style={{ flex: 1, padding: 14, borderRadius: 8, border: '1.5px solid #b8c1ec', fontSize: 18, background: '#181818', color: '#fff', marginRight: 16 }}
         />
         <button
           type="submit"
-          style={{ padding: '14px 36px', borderRadius: 8, background: '#FF0000', color: '#fff', border: 'none', fontWeight: 600, fontSize: 18, letterSpacing: 1 }}
+          style={{ padding: '14px 36px', borderRadius: 8, background: '#eebbc3', color: '#232946', border: 'none', fontWeight: 700, fontSize: 18, letterSpacing: 1, boxShadow: '0 2px 8px #232946', transition: 'background 0.18s, color 0.18s' }}
           disabled={loading}
         >
           {loading ? 'Searching...' : 'Search'}
@@ -174,19 +174,20 @@ const Learning: React.FC = () => {
                 key={videoId}
                 onClick={() => setSelectedVideo(videoId)}
                 style={{
-                  background: '#fff',
+                  background: '#232946',
                   borderRadius: 12,
-                  boxShadow: '0 2px 8px #e0e0e0',
+                  boxShadow: '0 2px 8px #181818',
                   cursor: 'pointer',
                   transition: 'transform 0.15s, box-shadow 0.15s',
                   padding: 0,
-                  border: 'none',
+                  border: '1.5px solid #232946',
                   overflow: 'hidden',
                   position: 'relative',
                   minHeight: 320,
                   display: 'flex',
                   flexDirection: 'column',
                   outline: 'none',
+                  color: '#fff',
                 }}
                 tabIndex={0}
                 onKeyDown={e => { if (e.key === 'Enter') setSelectedVideo(videoId); }}
@@ -241,19 +242,20 @@ const Learning: React.FC = () => {
               key={videoId}
               onClick={() => setSelectedVideo(videoId)}
               style={{
-                background: '#fff',
+                background: '#232946',
                 borderRadius: 12,
-                boxShadow: '0 2px 8px #e0e0e0',
+                boxShadow: '0 2px 8px #181818',
                 cursor: 'pointer',
                 transition: 'transform 0.15s, box-shadow 0.15s',
                 padding: 0,
-                border: 'none',
+                border: '1.5px solid #232946',
                 overflow: 'hidden',
                 position: 'relative',
                 minHeight: 320,
                 display: 'flex',
                 flexDirection: 'column',
                 outline: 'none',
+                color: '#fff',
               }}
               tabIndex={0}
               onKeyDown={e => { if (e.key === 'Enter') setSelectedVideo(videoId); }}

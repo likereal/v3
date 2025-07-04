@@ -44,6 +44,9 @@ const AppContent: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+  // Sidebar state
+  const [sidebarMinimized, setSidebarMinimized] = useState(false);
+  const sidebarWidth = sidebarMinimized ? 60 : 240;
 
   // AppBar with profile button (only when logged in)
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
@@ -62,9 +65,6 @@ const AppContent: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        bgcolor: isLoggedIn
-          ? 'linear-gradient(135deg, #232946 0%, #b8c1ec 100%)'
-          : 'background.default',
       }}
     >
       {isLoggedIn && (
@@ -75,6 +75,9 @@ const AppContent: React.FC = () => {
             bgcolor: 'background.paper',
             color: 'text.primary',
             boxShadow: '0 2px 16px 0 #b8c1ec33',
+            transition: 'margin-left 0.3s',
+            ml: `${sidebarWidth}px`,
+            width: { sm: `calc(100% - ${sidebarWidth}px)` },
           }}
           elevation={2}
         >
@@ -119,6 +122,8 @@ const AppContent: React.FC = () => {
             setWidth={() => {}}
             minWidth={180}
             maxWidth={400}
+            minimized={sidebarMinimized}
+            setMinimized={setSidebarMinimized}
           />
         )}
         <Box
@@ -131,7 +136,8 @@ const AppContent: React.FC = () => {
             display: 'flex',
             justifyContent: isLoggedIn ? 'center' : 'flex-start',
             alignItems: isLoggedIn ? 'flex-start' : 'stretch',
-            transition: 'padding 0.3s',
+            transition: 'padding 0.3s, margin-left 0.3s',
+            ml: isLoggedIn ? `${sidebarWidth}px` : 0,
           }}
         >
           {isLoggedIn ? (
@@ -139,7 +145,6 @@ const AppContent: React.FC = () => {
               elevation={6}
               sx={{
                 width: '100%',
-                maxWidth: 1100,
                 minHeight: '80vh',
                 p: { xs: 2, sm: 4 },
                 borderRadius: 5,

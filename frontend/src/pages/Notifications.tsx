@@ -67,7 +67,7 @@ const Notifications: React.FC = () => {
   }, [userInfo?.jira, idToken]);
 
   return (
-    <Box sx={{ width: '100%', mt: 4 }}>
+    <Box className="Notifications-page" sx={{ width: '100%', mt: 4 }}>
       <Typography variant="h4" sx={{ mb: 3, color: 'primary.main', fontWeight: 700 }}>Notifications</Typography>
       <Typography variant="body1" sx={{ mb: 4, color: 'text.secondary' }}>
         All your project and integration updates will appear here.

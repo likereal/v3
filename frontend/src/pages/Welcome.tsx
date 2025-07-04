@@ -36,14 +36,13 @@ const Welcome: React.FC = () => {
       <Fade in timeout={1200}>
         <Paper
           elevation={8}
+          className="card"
           sx={{
             p: isMobile ? 3 : 6,
             borderRadius: 5,
             textAlign: 'center',
             maxWidth: 480,
             width: '100%',
-            bgcolor: 'rgba(35,41,70,0.95)',
-            boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
             backdropFilter: 'blur(8px)',
             zIndex: 2,
           }}
@@ -101,8 +100,7 @@ const Welcome: React.FC = () => {
           <Slide in direction="up" timeout={1200}>
             <Button
               variant="contained"
-              color="primary"
-              size="large"
+              className="MuiButton-root"
               endIcon={<LoginIcon />}
               sx={{
                 mt: isMobile ? 2 : 4,
@@ -111,14 +109,8 @@ const Welcome: React.FC = () => {
                 borderRadius: 3,
                 fontWeight: 700,
                 fontSize: isMobile ? 16 : 20,
-                boxShadow: '0 4px 24px 0 #eebbc355',
-                transition: 'transform 0.2s',
-                '&:hover': { transform: 'scale(1.07)' },
-                background: 'linear-gradient(90deg, #eebbc3 0%, #b8c1ec 100%)',
-                color: '#232946',
               }}
               onClick={() => navigate('/auth')}
-              className="welcome-cta-btn"
             >
               Get Started
             </Button>

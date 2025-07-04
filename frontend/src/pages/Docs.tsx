@@ -41,10 +41,10 @@ const Docs: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 800, margin: '40px auto', background: '#e6fce6', borderRadius: 8, boxShadow: '0 2px 8px #eee', padding: 32 }}>
-      <h2 style={{ color: '#555' }}>Web Documentation Search</h2>
+    <div className="docs-page" style={{ maxWidth: 800, margin: '40px auto', background: '#1c1c27', borderRadius: 16, boxShadow: '0 2px 16px #181818', padding: 32, color: '#fff' }}>
+      <h2 style={{ color: '#eebbc3', fontWeight: 700 }}>Web Documentation Search</h2>
       <div style={{ marginBottom: 16 }}>
-        <span style={{ color: '#888', marginRight: 8 }}>Try these examples:</span>
+        <span style={{ color: '#b8c1ec', marginRight: 8 }}>Try these examples:</span>
         {exampleQueries.map((q, idx) => (
           <button
             key={q}
@@ -53,29 +53,33 @@ const Docs: React.FC = () => {
               marginRight: 8,
               marginBottom: 6,
               padding: '4px 12px',
-              borderRadius: 4,
-              border: '1px solidrgb(99, 171, 244)',
-              background: '#f5faff',
-              color: '#1976d2',
+              borderRadius: 6,
+              border: '1.5px solid #eebbc3',
+              background: 'transparent',
+              color: '#eebbc3',
               cursor: 'pointer',
               fontSize: 14,
+              fontWeight: 500,
+              transition: 'background 0.18s, color 0.18s',
             }}
+            onMouseOver={e => { e.currentTarget.style.background = '#232946'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'transparent'; }}
           >
             {q}
           </button>
         ))}
       </div>
-      <form onSubmit={handleSearch} style={{ display: 'flex', marginBottom: 24, background: '#e6fce6', borderRadius: 6, padding: 8 }}>
+      <form onSubmit={handleSearch} style={{ display: 'flex', marginBottom: 24, background: '#232946', borderRadius: 8, padding: 8 }}>
         <input
           type="text"
           placeholder="Search documentation..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ flex: 1, padding: 10, borderRadius: 4, border: '1px solid #ccc', fontSize: 16 }}
+          style={{ flex: 1, padding: 10, borderRadius: 6, border: '1.5px solid #b8c1ec', fontSize: 16, background: '#181818', color: '#fff' }}
         />
         <button
           type="submit"
-          style={{ marginLeft: 12, padding: '10px 24px', borderRadius: 4, background: '#1976d2', color: '#fff', border: 'none', fontWeight: 500, fontSize: 16 }}
+          style={{ marginLeft: 12, padding: '10px 24px', borderRadius: 6, background: '#eebbc3', color: '#232946', border: 'none', fontWeight: 700, fontSize: 16, boxShadow: '0 2px 8px #232946', transition: 'background 0.18s, color 0.18s' }}
           disabled={loading}
         >
           {loading ? 'Searching...' : 'Search'}
@@ -87,7 +91,7 @@ const Docs: React.FC = () => {
           <li style={{ color: '#888' }}>No documentation found. Try searching for a topic.</li>
         )}
         {results.map((doc, idx) => (
-          <li key={idx} style={{ marginBottom: 24, padding: 16, border: '1px solid #f0f0f0', borderRadius: 6 }}>
+          <li key={idx} style={{ marginBottom: 24, padding: 20, border: '1.5px solid #232946', borderRadius: 12, background: '#232946', color: '#fff', boxShadow: '0 2px 8px #181818' }}>
             <div>
               <a
                 href={doc.url}
@@ -96,14 +100,14 @@ const Docs: React.FC = () => {
                 style={{
                   fontWeight: 'bold',
                   fontSize: 18,
-                  color: '#1976d2',
+                  color: '#eebbc3',
                   textDecoration: 'underline',
                   wordBreak: 'break-all',
                 }}
               >
                 {doc.title}
               </a>
-              {doc.description && <div style={{ color: '#555', margin: '6px 0 0 0' }}>{doc.description}</div>}
+              {doc.description && <div style={{ color: '#b8c1ec', margin: '6px 0 0 0' }}>{doc.description}</div>}
             </div>
           </li>
         ))}

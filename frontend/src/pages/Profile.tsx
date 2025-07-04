@@ -78,7 +78,7 @@ const Profile: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth: 1200, margin: '2rem auto', background: '#232946', color: '#fff', borderRadius: 10, padding: '2rem', boxShadow: '0 2px 12px #0002' }}>
+    <div className="card" style={{ maxWidth: 1200, margin: '2rem auto', padding: '2rem' }}>
       <h2 style={{ textAlign: 'center', marginBottom: 24 }}>Profile</h2>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div><b>Email:</b> {user.email}</div>
@@ -88,38 +88,22 @@ const Profile: React.FC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         {/* GitHub Section */}
-        <div style={{ background: '#1a1a2e', borderRadius: 8, padding: 20 }}>
+        <div className="card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ margin: 0, color: '#eebbc3' }}>GitHub</h3>
             {userInfo?.github ? (
               <button 
                 onClick={disconnectGithub} 
-                style={{ 
-                  padding: '0.3em 0.8em', 
-                  borderRadius: 4, 
-                  background: '#dc3545', 
-                  color: '#fff', 
-                  fontWeight: 600, 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  fontSize: '0.8em'
-                }}
+                className="MuiButton-root"
+                style={{ fontSize: '0.8em', width: 'auto', minWidth: 100 }}
               >
                 Disconnect
               </button>
             ) : (
               <button
                 onClick={() => { if (!user) { navigate('/auth'); } else { connectGithub(); } }}
-                style={{ 
-                  padding: '0.3em 0.8em', 
-                  borderRadius: 4, 
-                  background: '#181818', 
-                  color: '#eebbc3', 
-                  fontWeight: 600, 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  fontSize: '0.8em'
-                }}
+                className="MuiButton-root"
+                style={{ fontSize: '0.8em', width: 'auto', minWidth: 100 }}
               >
                 Connect
               </button>
@@ -152,38 +136,22 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Jira Section */}
-        <div style={{ background: '#1a1a2e', borderRadius: 8, padding: 20 }}>
+        <div className="card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ margin: 0, color: '#eebbc3' }}>Jira</h3>
             {userInfo?.jira ? (
               <button 
                 onClick={disconnectJira} 
-                style={{ 
-                  padding: '0.3em 0.8em', 
-                  borderRadius: 4, 
-                  background: '#dc3545', 
-                  color: '#fff', 
-                  fontWeight: 600, 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  fontSize: '0.8em'
-                }}
+                className="MuiButton-root"
+                style={{ fontSize: '0.8em', width: 'auto', minWidth: 100 }}
               >
                 Disconnect
               </button>
             ) : (
               <button
                 onClick={() => { if (!user) { navigate('/auth'); } else { connectJira(); } }}
-                style={{ 
-                  padding: '0.3em 0.8em', 
-                  borderRadius: 4, 
-                  background: '#181818', 
-                  color: '#eebbc3', 
-                  fontWeight: 600, 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  fontSize: '0.8em'
-                }}
+                className="MuiButton-root"
+                style={{ fontSize: '0.8em', width: 'auto', minWidth: 100 }}
               >
                 Connect
               </button>

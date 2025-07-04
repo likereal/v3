@@ -93,7 +93,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
-      <div className="dashboard-grid">
+      <div className="dashboard-grid card">
         <Widget title="Tasks & Projects">
           {user && userInfo?.jira ? (
             jiraLoading ? (
@@ -120,13 +120,7 @@ const Dashboard: React.FC = () => {
                 ) : (
                   <div className="jira-issues-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     {jiraIssues.slice(0, 12).map(issue => (
-                      <div key={issue.id} style={{ 
-                        background: '#1a1a2e', 
-                        padding: '12px', 
-                        borderRadius: '6px', 
-                        marginBottom: '8px',
-                        border: '1px solid #2a2a3e'
-                      }}>
+                      <div key={issue.id} className="card" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div style={{ fontWeight: '600', color: '#eebbc3' }}>
@@ -203,34 +197,11 @@ const Dashboard: React.FC = () => {
                         window.open('https://app.atlassian.com', '_blank');
                       }
                     }}
-                    style={{ 
-                      padding: '0.5em 1em', 
-                      borderRadius: '6px', 
-                      background: '#181818', 
-                      color: '#eebbc3', 
-                      fontWeight: '600', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      fontSize: '0.9em'
-                    }}
+                    className="MuiButton-root"
                   >
                     View All in Jira
                   </button>
-                  <button 
-                    onClick={fetchJiraIssues}
-                    style={{ 
-                      padding: '0.5em 1em', 
-                      borderRadius: '6px', 
-                      background: '#2a2a3e', 
-                      color: '#fff', 
-                      fontWeight: '600', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      fontSize: '0.9em'
-                    }}
-                  >
-                    Refresh
-                  </button>
+                  <button onClick={fetchJiraIssues} className="MuiButton-root">Refresh</button>
                 </div>
               </div>
             )
