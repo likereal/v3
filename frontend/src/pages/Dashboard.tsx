@@ -355,7 +355,40 @@ const Dashboard: React.FC = () => {
           )}
         </Widget>
         <Widget title="Documentation">
-          <p>Access project docs, wikis, and knowledge base.</p>
+          {(() => {
+            let lastDocs = null;
+            try {
+              const stored = localStorage.getItem('last_docs_read');
+              if (stored) lastDocs = JSON.parse(stored);
+            } catch {}
+            return (
+              <div>
+                <div style={{ marginBottom: 8 }}>
+                  <b>Access project docs, wikis, and knowledge base.</b>
+                </div>
+                {lastDocs ? (
+                  <div style={{ color: '#eebbc3', marginBottom: 8 }}>
+                    <b>Last read:</b> {lastDocs.url ? (
+                      <a href={lastDocs.url} target="_blank" rel="noopener noreferrer" style={{ color: '#eebbc3', textDecoration: 'underline' }}>{lastDocs.title}</a>
+                    ) : lastDocs.title}
+                    <div style={{ fontSize: '0.85em', color: '#aaa' }}>
+                      {lastDocs.date ? `on ${new Date(lastDocs.date).toLocaleString()}` : ''}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#888', marginBottom: 8 }}>
+                    No recent docs read.
+                  </div>
+                )}
+                <button
+                  onClick={() => navigate('/docs')}
+                  style={{ padding: '0.7em 2em', borderRadius: 6, background: '#eebbc3', color: '#232946', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                >
+                  Go to Docs
+                </button>
+              </div>
+            );
+          })()}
         </Widget>
         <Widget title="Learning Resources">
           {(() => {
