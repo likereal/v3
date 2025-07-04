@@ -1,15 +1,17 @@
 import React from 'react';
+import InsightsChat from '../components/InsightsChat';
+import './Insights.css';
 
-const Insights: React.FC = () => (
-  <div>
-    <h2>Code & Project Insights</h2>
-    <ul>
-      <li>Code quality: <span>Coming soon</span></li>
-      <li>Test coverage: <span>Coming soon</span></li>
-      <li>Build status: <span>Coming soon</span></li>
-      <li>Team activity: <span>Coming soon</span></li>
-    </ul>
-  </div>
-);
+const Insights: React.FC = () => {
+  return (
+    <div className="insights-container">
+      <div className="insights-header">
+        <h1>AI Insights</h1>
+        <p>Get AI-powered insights and recommendations for your development workflow</p>
+      </div>
+      <InsightsChat />
+    </div>
+  );
+};
 
 export default Insights; 
