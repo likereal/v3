@@ -1,8 +1,4 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "server.js",
-  "license": "MIT",
   "scripts": {
     "start": "node server.js"
   },
@@ -12,9 +8,9 @@
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
-    "firebase-admin": "^11.11.1",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
-    "passport-oauth2": "^1.8.0"
+    "passport-oauth2": "^1.8.0",
+    "react-icons": "^5.5.0"
   }
 }
