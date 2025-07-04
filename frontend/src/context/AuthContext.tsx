@@ -25,6 +25,7 @@ export type UserInfo = {
 };
 
 type AuthContextType = {
+  isLoggedIn: boolean;
   user: User | null;
   userInfo: UserInfo | null;
   idToken: string | null;
@@ -49,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [idToken, setIdToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isLoggedIn = !!user;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -188,7 +190,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userInfo, idToken, loading, error, login, loginWithGoogle, logout, connectGithub, connectJira, disconnectGithub, disconnectJira, fetchJiraUserInfo, refreshUserInfo }}>
+    <AuthContext.Provider value={{
+      isLoggedIn,
+      user,
+      userInfo,
+      idToken,
+      loading,
+      error,
+      login,
+      loginWithGoogle,
+      logout,
+      connectGithub,
+      connectJira,
+      disconnectGithub,
+      disconnectJira,
+      fetchJiraUserInfo,
+      refreshUserInfo
+    }}>
       {children}
     </AuthContext.Provider>
   );

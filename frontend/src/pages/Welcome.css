@@ -1,0 +1,68 @@
+.welcome-gradient-bg {
+  background: linear-gradient(135deg, #232946 0%, #b8c1ec 100%);
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+.welcome-bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.22;
+  filter: blur(40px);
+  z-index: 0;
+  animation: blobMove 18s infinite alternate;
+}
+.blob1 {
+  width: 320px;
+  height: 320px;
+  background: #eebbc3;
+  top: -80px;
+  left: -100px;
+  animation-delay: 0s;
+}
+.blob2 {
+  width: 220px;
+  height: 220px;
+  background: #b8c1ec;
+  bottom: -60px;
+  right: -80px;
+  animation-delay: 3s;
+}
+.blob3 {
+  width: 180px;
+  height: 180px;
+  background: #232946;
+  top: 60%;
+  left: 60%;
+  animation-delay: 6s;
+}
+@keyframes blobMove {
+  0% { transform: scale(1) translateY(0) translateX(0);}
+  100% { transform: scale(1.15) translateY(30px) translateX(40px);}
+}
+
+/* Animated lines for extra interactivity */
+.welcome-animated-line {
+  position: absolute;
+  width: 2px;
+  height: 180px;
+  background: linear-gradient(180deg, #eebbc3 0%, #b8c1ec 100%);
+  opacity: 0.18;
+  border-radius: 1px;
+  z-index: 1;
+  animation: lineMove 8s infinite alternate;
+}
+.line1 {
+  left: 30%;
+  top: 10%;
+  animation-delay: 0s;
+}
+.line2 {
+  right: 25%;
+  bottom: 15%;
+  animation-delay: 2s;
+}
+@keyframes lineMove {
+  0% { transform: translateY(0) scaleY(1);}
+  100% { transform: translateY(30px) scaleY(1.2);}
+}
