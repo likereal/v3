@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUser, FaTachometerAlt, FaFolderOpen, FaBook, FaGraduationCap, FaUsers, FaChartLine, FaSearch, FaPuzzlePiece, FaBell, FaCog, FaSignInAlt } from 'react-icons/fa';
+import { FaUser, FaTachometerAlt, FaFolderOpen, FaBook, FaGraduationCap, FaUsers, FaChartLine, FaPuzzlePiece, FaBell, FaCog, FaSignInAlt } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 import './Sidebar.css';
 
@@ -12,11 +12,9 @@ type NavLink = {
 
 const navLinks: NavLink[] = [
   { to: '/', label: 'Dashboard', icon: FaTachometerAlt },
-  { to: '/projects', label: 'Projects', icon: FaFolderOpen },
   { to: '/docs', label: 'Docs', icon: FaBook },
   { to: '/learning', label: 'Learning', icon: FaGraduationCap },
   { to: '/insights', label: 'Insights', icon: FaChartLine },
-  { to: '/search', label: 'Search', icon: FaSearch },
   { to: '/integrations', label: 'Integrations', icon: FaPuzzlePiece },
   { to: '/notifications', label: 'Notifications', icon: FaBell },
 ];

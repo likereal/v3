@@ -3,11 +3,9 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { ThemeProvider, createTheme, CssBaseline, AppBar, Toolbar, IconButton, Typography, Box, Menu, MenuItem, Avatar, Paper } from '@mui/material';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import Projects from './pages/Projects';
 import Docs from './pages/Docs';
 import Learning from './pages/Learning';
 import Insights from './pages/Insights';
-import Search from './pages/Search';
 import Integrations from './pages/Integrations';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
@@ -156,11 +154,9 @@ const AppContent: React.FC = () => {
                 {/* Protected routes */}
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                 <Route path="/docs" element={<ProtectedRoute><Docs /></ProtectedRoute>} />
                 <Route path="/learning" element={<ProtectedRoute><Learning /></ProtectedRoute>} />
                 <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
-                <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
                 <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 {/* Fallback */}
