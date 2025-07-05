@@ -1,11 +1,106 @@
-body {
+html, body {
+  min-height: 100vh;
+  width: 100vw;
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f6fa;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  background: linear-gradient(135deg, #181818 0%, #232946 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #fff;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+:root {
+  --accent-pink: #eebbc3;
+  --accent-blue: #b8c1ec;
+  --dark-bg: #232946;
+  --deep-dark: #181818;
+  --card-bg: rgba(35,41,70,0.95);
+  --card-radius: 24px;
+  --shadow: 0 8px 32px 0 rgba(31,38,135,0.17), 0 2px 8px rgba(44, 62, 80, 0.08);
+}
+
+.card, .MuiPaper-root, .widget, .profile-header, .profile-section, .profile-card {
+  background: var(--card-bg) !important;
+  border-radius: var(--card-radius) !important;
+  box-shadow: var(--shadow) !important;
+  color: #fff !important;
+  border: 1.5px solid var(--dark-bg);
+}
+
+/* Ensure widgets are much darker than cards */
+.widget {
+  background: #1c1c27 !important;
+  color: #fff !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--accent-pink);
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+button, .MuiButton-root {
+  background: linear-gradient(90deg, var(--accent-pink) 0%, var(--accent-blue) 100%) !important;
+  color: var(--dark-bg) !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: 0 4px 24px 0 #eebbc355 !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+button:hover, .MuiButton-root:hover {
+  transform: scale(1.07);
+  box-shadow: 0 8px 32px 0 #eebbc355 !important;
+}
+
+input, textarea, select {
+  background: #181818 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  border: 1.5px solid var(--dark-bg) !important;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  padding: 0.7em 1em;
+}
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--accent-pink);
+  border-color: var(--accent-pink) !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: var(--deep-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-pink);
+}
+
+a {
+  color: var(--accent-pink);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--accent-blue);
+}
+
+.MuiTypography-root {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
 }
 
 .App {
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .app-layout {
@@ -16,25 +111,13 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 0;
+  padding: 2rem;
   margin-left: 0;
   transition: margin-left 0.3s;
-  width: 100%;
-}
-
-/* Only apply sidebar margin when user is logged in and sidebar is visible */
-.app-layout:has(.sidebar) .main-content {
-  margin-left: var(--sidebar-width, 220px);
-}
-
-/* For pages without sidebar (welcome, auth), ensure full width */
-.main-content > * {
-  width: 100%;
-  min-height: 100vh;
 }
 
 @media (min-width: 900px) {
-  .app-layout:has(.sidebar) .main-content {
+  .main-content {
     margin-left: var(--sidebar-width, 220px);
   }
 }
@@ -46,7 +129,7 @@ body {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
 }
 
@@ -85,4 +168,33 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+.app-header, .MuiAppBar-root {
+  background: linear-gradient(135deg, #181818 60%, #232946 100%) !important;
+  color: #eebbc3 !important;
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.17), 0 2px 8px rgba(44, 62, 80, 0.08) !important;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  border-bottom: 1.5px solid #232946;
+}
+
+input, textarea, select, button, .MuiButton-root, .MuiTypography-root {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+button, .MuiButton-root, .card, .MuiPaper-root, .widget, a {
+  transition: box-shadow 0.2s, transform 0.2s, color 0.2s, background 0.2s;
+  box-shadow: var(--shadow);
+}
+button:focus, .MuiButton-root:focus, a:focus {
+  outline: 2px solid var(--accent-pink);
+  box-shadow: 0 0 0 3px var(--accent-blue);
+}
+/* Notification cards use the widget background color */
+.Notifications-page .MuiCard-root {
+  background: #1c1c27 !important;
+  color: #fff !important;
 }

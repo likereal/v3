@@ -9,6 +9,7 @@ const OAuth2Strategy = require('passport-oauth2');
 const admin = require('firebase-admin');
 const serviceAccount = require('./v3hackathon-firebase-adminsdk-fbsvc-365348b3fc.json');
 const MemoryStore = require('memorystore')(session);
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 dotenv.config();
 
@@ -121,7 +122,158 @@ app.get('/api/github/issues', async (req, res) => {
     );
     res.json(response.data);
   } catch (error) {
-    // Log the full error object for debugging
+    console.error('GitHub API error:', error.response ? error.response.data : error.message);
+    if (error.response) {
+      // Handle rate limit specifically
+      if (error.response.status === 403 && error.response.data.message?.includes('rate limit')) {
+        return res.status(403).json({ 
+          error: 'GitHub API rate limit exceeded. Please set GITHUB_TOKEN environment variable for higher limits.',
+          details: error.response.data.message
+        });
+      }
+      res.status(error.response.status).json({ error: error.response.data.message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// GitHub Pull Requests Route
+app.get('/api/github/pull-requests', async (req, res) => {
+  const { owner, repo, token, state = 'open' } = req.query;
+  if (!owner || !repo) {
+    console.error('Missing owner or repo');
+    return res.status(400).json({ error: 'Missing owner or repo' });
+  }
+  try {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    } else if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/pulls?state=${state}&per_page=30`,
+      { headers }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error.response ? error.response.data : error.message);
+    if (error.response) {
+      res.status(error.response.status).json({ error: error.response.data.message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// GitHub Repository Details Route
+app.get('/api/github/repo', async (req, res) => {
+  const { owner, repo, token } = req.query;
+  if (!owner || !repo) {
+    console.error('Missing owner or repo');
+    return res.status(400).json({ error: 'Missing owner or repo' });
+  }
+  try {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    } else if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}`,
+      { headers }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error.response ? error.response.data : error.message);
+    if (error.response) {
+      res.status(error.response.status).json({ error: error.response.data.message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// GitHub Commits Route
+app.get('/api/github/commits', async (req, res) => {
+  const { owner, repo, token } = req.query;
+  if (!owner || !repo) {
+    console.error('Missing owner or repo');
+    return res.status(400).json({ error: 'Missing owner or repo' });
+  }
+  try {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    } else if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/commits?per_page=10`,
+      { headers }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error.response ? error.response.data : error.message);
+    if (error.response) {
+      res.status(error.response.status).json({ error: error.response.data.message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// GitHub Contributors Route
+app.get('/api/github/contributors', async (req, res) => {
+  const { owner, repo, token } = req.query;
+  if (!owner || !repo) {
+    console.error('Missing owner or repo');
+    return res.status(400).json({ error: 'Missing owner or repo' });
+  }
+  try {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    } else if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/contributors?per_page=10`,
+      { headers }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error.response ? error.response.data : error.message);
+    if (error.response) {
+      res.status(error.response.status).json({ error: error.response.data.message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// GitHub Languages Route
+app.get('/api/github/languages', async (req, res) => {
+  const { owner, repo, token } = req.query;
+  if (!owner || !repo) {
+    console.error('Missing owner or repo');
+    return res.status(400).json({ error: 'Missing owner or repo' });
+  }
+  try {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    } else if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/languages`,
+      { headers }
+    );
+    res.json(response.data);
+  } catch (error) {
     console.error('GitHub API error:', error.response ? error.response.data : error.message);
     if (error.response) {
       res.status(error.response.status).json({ error: error.response.data.message });
@@ -533,7 +685,10 @@ app.get('/api/jira/issues', verifyFirebaseToken, async (req, res) => {
       }
     });
     
-    res.json(issuesRes.data.issues || []);
+    res.json({
+      issues: issuesRes.data.issues || [],
+      jiraBaseUrl: jiraBaseUrl
+    });
   } catch (e) {
     // Handle specific authentication errors
     if (e.response?.status === 401) {
@@ -551,6 +706,90 @@ app.get('/api/jira/issues', verifyFirebaseToken, async (req, res) => {
     }
     
     res.status(500).json({ error: 'Failed to fetch Jira issues' });
+  }
+});
+
+// Endpoint to get Jira user stories
+app.get('/api/jira/user-stories', verifyFirebaseToken, async (req, res) => {
+  const uid = req.firebaseUid;
+  const { project } = req.query; // Get project parameter from query
+  
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if (!doc.exists) {
+      return res.json([]);
+    }
+    
+    const userData = doc.data();
+    if (!userData.jira || !userData.jira.accessToken) {
+      return res.json([]);
+    }
+
+    const jiraData = userData.jira;
+    
+    // Refresh token if needed
+    const accessToken = await refreshJiraTokenIfNeeded(uid, jiraData);
+    
+    // First, get the user's accessible Jira sites
+    const sitesRes = await axios.get('https://api.atlassian.com/oauth/token/accessible-resources', {
+      headers: { 
+        Authorization: `Bearer ${accessToken}`,
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!sitesRes.data || sitesRes.data.length === 0) {
+      return res.json([]);
+    }
+    
+    // Use the first accessible site (usually the user's primary Jira instance)
+    const jiraSite = sitesRes.data[0];
+    const jiraBaseUrl = jiraSite.url;
+    
+    // For Jira Cloud, we need to use the cloud ID instead of the URL
+    const cloudId = jiraSite.id;
+    
+    // Build JQL query for user stories based on project parameter
+    let jql = '';
+    if (project) {
+      jql = `project = "${project}" AND issuetype = "Story" ORDER BY updated DESC`;
+    } else {
+      jql = 'assignee = currentUser() AND issuetype = "Story" ORDER BY updated DESC';
+    }
+    
+    const userStoriesRes = await axios.get(`https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/search`, {
+      headers: { 
+        Authorization: `Bearer ${accessToken}`,
+        'Accept': 'application/json'
+      },
+      params: {
+        jql: jql,
+        maxResults: 20,
+        fields: 'summary,status,assignee,created,updated,project,priority,issuetype'
+      }
+    });
+    
+    res.json({
+      userStories: userStoriesRes.data.issues || [],
+      jiraBaseUrl: jiraBaseUrl
+    });
+  } catch (e) {
+    // Handle specific authentication errors
+    if (e.response?.status === 401) {
+      return res.status(401).json({ 
+        error: 'Jira authentication failed. Please reconnect your Jira account.',
+        code: 'AUTH_FAILED'
+      });
+    }
+    
+    if (e.response?.status === 403) {
+      return res.status(403).json({ 
+        error: 'Insufficient permissions to access Jira. Please check your Jira permissions.',
+        code: 'INSUFFICIENT_PERMISSIONS'
+      });
+    }
+    
+    res.status(500).json({ error: 'Failed to fetch Jira user stories' });
   }
 });
 
@@ -698,107 +937,79 @@ app.get('/api/webdocs', async (req, res) => {
   }
 });
 
-// Web Docs Search Endpoint
-app.get('/api/webdocs', async (req, res) => {
-  const query = req.query.q;
-  if (!query) {
-    return res.status(400).json({ error: 'Missing query parameter' });
+// --- CODE REVIEW CHATBOT ENDPOINT (Gemini) ---
+app.post('/api/code-review-chat', async (req, res) => {
+  const { message } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Missing message' });
   }
-
-  const endpoint = 'https://api.duckduckgo.com/';
-
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ error: 'Gemini API key not set in backend' });
+  }
   try {
-    const response = await axios.get(endpoint, {
-      params: { q: query, format: 'json', no_redirect: 1, no_html: 1 },
-    });
-    const data = response.data;
-    const docs = [];
-    // Main result
-    if (data.Heading && data.AbstractURL) {
-      docs.push({
-        title: data.Heading,
-        description: data.Abstract || data.AbstractText || '',
-        url: data.AbstractURL,
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    
+    const prompt = `You are an expert code reviewer. Provide concise, actionable, and friendly code review feedback. If the user pastes code, review it. If they ask a question, answer as a code review assistant.
+
+User message: ${message}`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const reply = response.text().trim();
+    res.json({ reply });
+  } catch (e) {
+    console.error('Gemini error:', e.message);
+    
+    // Check if it's a rate limit error
+    if (e.message && e.message.includes('429') && e.message.includes('Too Many Requests')) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded. Please try again later or upgrade your Gemini API plan.',
+        details: 'You have exceeded the free tier rate limits. Consider upgrading to a paid plan for higher limits.',
+        retryAfter: 60 // Suggest waiting 60 seconds
       });
     }
-    // Related topics
-    if (Array.isArray(data.RelatedTopics)) {
-      data.RelatedTopics.forEach(topic => {
-        if (topic.Text && topic.FirstURL) {
-          docs.push({
-            title: topic.Text,
-            description: '',
-            url: topic.FirstURL,
-          });
-        } else if (Array.isArray(topic.Topics)) {
-          topic.Topics.forEach(subtopic => {
-            if (subtopic.Text && subtopic.FirstURL) {
-              docs.push({
-                title: subtopic.Text,
-                description: '',
-                url: subtopic.FirstURL,
-              });
-            }
-          });
-        }
+    
+    // Check if it's a quota exceeded error
+    if (e.message && e.message.includes('quota')) {
+      return res.status(429).json({ 
+        error: 'Daily quota exceeded. Please try again tomorrow or upgrade your plan.',
+        details: 'You have reached the daily limit for free tier requests.',
+        retryAfter: 86400 // Suggest waiting 24 hours
       });
     }
-    res.json({ docs });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch web docs', details: error.message });
+    
+    // Provide a fallback response for other errors
+    const fallbackResponse = getFallbackResponse(message);
+    res.json({ reply: fallbackResponse });
   }
 });
 
-// Web Docs Search Endpoint
-app.get('/api/webdocs', async (req, res) => {
-  const query = req.query.q;
-  if (!query) {
-    return res.status(400).json({ error: 'Missing query parameter' });
+// Fallback response function for when Gemini API is unavailable
+function getFallbackResponse(message) {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('code') || lowerMessage.includes('review')) {
+    return "I'm currently experiencing technical difficulties with my AI service. Here are some general code review tips:\n\n" +
+           "1. Check for proper error handling\n" +
+           "2. Ensure code follows naming conventions\n" +
+           "3. Look for potential security vulnerabilities\n" +
+           "4. Verify code readability and maintainability\n" +
+           "5. Test edge cases thoroughly\n\n" +
+           "Please try again later when the service is restored.";
   }
-
-  const endpoint = 'https://api.duckduckgo.com/';
-
-  try {
-    const response = await axios.get(endpoint, {
-      params: { q: query, format: 'json', no_redirect: 1, no_html: 1 },
-    });
-    const data = response.data;
-    const docs = [];
-    // Main result
-    if (data.Heading && data.AbstractURL) {
-      docs.push({
-        title: data.Heading,
-        description: data.Abstract || data.AbstractText || '',
-        url: data.AbstractURL,
-      });
-    }
-    // Related topics
-    if (Array.isArray(data.RelatedTopics)) {
-      data.RelatedTopics.forEach(topic => {
-        if (topic.Text && topic.FirstURL) {
-          docs.push({
-            title: topic.Text,
-            description: '',
-            url: topic.FirstURL,
-          });
-        } else if (Array.isArray(topic.Topics)) {
-          topic.Topics.forEach(subtopic => {
-            if (subtopic.Text && subtopic.FirstURL) {
-              docs.push({
-                title: subtopic.Text,
-                description: '',
-                url: subtopic.FirstURL,
-              });
-            }
-          });
-        }
-      });
-    }
-    res.json({ docs });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch web docs', details: error.message });
+  
+  if (lowerMessage.includes('bug') || lowerMessage.includes('error')) {
+    return "I'm unable to analyze your code right now due to service issues. For debugging:\n\n" +
+           "1. Check console logs for error messages\n" +
+           "2. Use debugging tools to step through code\n" +
+           "3. Verify input data and types\n" +
+           "4. Test with different scenarios\n\n" +
+           "Please try again later.";
   }
-});
+  
+  return "I'm currently experiencing technical difficulties. Please try again later when the service is restored.";
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
