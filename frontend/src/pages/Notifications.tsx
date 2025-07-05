@@ -153,7 +153,7 @@ const Notifications: React.FC = () => {
                   variant="outlined" 
                   color="primary" 
                   size="small"
-                  onClick={() => { if (!userInfo) { navigate('/auth'); } else { connectGithub(); } }}
+                  onClick={() => { if (!userInfo) { navigate('/profile'); } else { connectGithub(); } }}
                 >
                   Connect GitHub
                 </Button>
@@ -273,7 +273,7 @@ const Notifications: React.FC = () => {
                   variant="outlined" 
                   color="primary" 
                   size="small"
-                  onClick={() => { if (!userInfo) { navigate('/auth'); } else { connectJira(); } }}
+                  onClick={() => { if (!userInfo) { navigate('/profile'); } else { connectJira(); } }}
                 >
                   Connect Jira
                 </Button>

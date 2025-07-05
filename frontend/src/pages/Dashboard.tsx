@@ -309,7 +309,7 @@ const Dashboard: React.FC = () => {
                 <>
                   <div style={{ marginBottom: '12px' }}>Connect Jira to see your assigned tasks and projects.</div>
                   <button 
-                    onClick={() => { if (!user) { navigate('/auth'); } else { connectJira(); } }} 
+                    onClick={() => { if (!user) { navigate('/profile'); } else { connectJira(); } }} 
                     style={{ 
                       padding: '0.7em 2em', 
                       borderRadius: '6px', 
@@ -327,7 +327,7 @@ const Dashboard: React.FC = () => {
                 <>
                   <div style={{ marginBottom: '12px' }}>Log in to connect Jira and see your tasks.</div>
                   <button 
-                    onClick={() => navigate('/auth')} 
+                    onClick={() => navigate('/profile')} 
                     style={{ 
                       padding: '0.7em 2em', 
                       borderRadius: '6px', 
@@ -521,7 +521,7 @@ const Dashboard: React.FC = () => {
               ) : (
                 <>
                   <div>Log in to connect GitHub and see code insights for likereal/v3.</div>
-                  <button onClick={() => navigate('/auth')} style={{ marginTop: 12, padding: '0.7em 2em', borderRadius: 6, background: '#fff', color: '#232946', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Login</button>
+                  <button onClick={() => navigate('/profile')} style={{ marginTop: 12, padding: '0.7em 2em', borderRadius: 6, background: '#fff', color: '#232946', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Login</button>
                 </>
               )}
             </div>
