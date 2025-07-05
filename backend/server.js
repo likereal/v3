@@ -9,6 +9,7 @@ const OAuth2Strategy = require('passport-oauth2');
 const admin = require('firebase-admin');
 const serviceAccount = require('./v3hackathon-firebase-adminsdk-fbsvc-365348b3fc.json');
 const MemoryStore = require('memorystore')(session);
+const { Configuration, OpenAIApi } = require('openai');
 
 dotenv.config();
 
@@ -698,105 +699,32 @@ app.get('/api/webdocs', async (req, res) => {
   }
 });
 
-// Web Docs Search Endpoint
-app.get('/api/webdocs', async (req, res) => {
-  const query = req.query.q;
-  if (!query) {
-    return res.status(400).json({ error: 'Missing query parameter' });
+// --- CODE REVIEW CHATBOT ENDPOINT (OpenAI) ---
+app.post('/api/code-review-chat', async (req, res) => {
+  const { message } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Missing message' });
   }
-
-  const endpoint = 'https://api.duckduckgo.com/';
-
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OpenAI API key not set in backend' });
+  }
   try {
-    const response = await axios.get(endpoint, {
-      params: { q: query, format: 'json', no_redirect: 1, no_html: 1 },
+    const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
+    const openai = new OpenAIApi(configuration);
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are an expert code reviewer. Provide concise, actionable, and friendly code review feedback. If the user pastes code, review it. If they ask a question, answer as a code review assistant.' },
+        { role: 'user', content: message }
+      ],
+      max_tokens: 400,
+      temperature: 0.7
     });
-    const data = response.data;
-    const docs = [];
-    // Main result
-    if (data.Heading && data.AbstractURL) {
-      docs.push({
-        title: data.Heading,
-        description: data.Abstract || data.AbstractText || '',
-        url: data.AbstractURL,
-      });
-    }
-    // Related topics
-    if (Array.isArray(data.RelatedTopics)) {
-      data.RelatedTopics.forEach(topic => {
-        if (topic.Text && topic.FirstURL) {
-          docs.push({
-            title: topic.Text,
-            description: '',
-            url: topic.FirstURL,
-          });
-        } else if (Array.isArray(topic.Topics)) {
-          topic.Topics.forEach(subtopic => {
-            if (subtopic.Text && subtopic.FirstURL) {
-              docs.push({
-                title: subtopic.Text,
-                description: '',
-                url: subtopic.FirstURL,
-              });
-            }
-          });
-        }
-      });
-    }
-    res.json({ docs });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch web docs', details: error.message });
-  }
-});
-
-// Web Docs Search Endpoint
-app.get('/api/webdocs', async (req, res) => {
-  const query = req.query.q;
-  if (!query) {
-    return res.status(400).json({ error: 'Missing query parameter' });
-  }
-
-  const endpoint = 'https://api.duckduckgo.com/';
-
-  try {
-    const response = await axios.get(endpoint, {
-      params: { q: query, format: 'json', no_redirect: 1, no_html: 1 },
-    });
-    const data = response.data;
-    const docs = [];
-    // Main result
-    if (data.Heading && data.AbstractURL) {
-      docs.push({
-        title: data.Heading,
-        description: data.Abstract || data.AbstractText || '',
-        url: data.AbstractURL,
-      });
-    }
-    // Related topics
-    if (Array.isArray(data.RelatedTopics)) {
-      data.RelatedTopics.forEach(topic => {
-        if (topic.Text && topic.FirstURL) {
-          docs.push({
-            title: topic.Text,
-            description: '',
-            url: topic.FirstURL,
-          });
-        } else if (Array.isArray(topic.Topics)) {
-          topic.Topics.forEach(subtopic => {
-            if (subtopic.Text && subtopic.FirstURL) {
-              docs.push({
-                title: subtopic.Text,
-                description: '',
-                url: subtopic.FirstURL,
-              });
-            }
-          });
-        }
-      });
-    }
-    res.json({ docs });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch web docs', details: error.message });
+    const reply = completion.data.choices[0].message.content.trim();
+    res.json({ reply });
+  } catch (e) {
+    console.error('OpenAI error:', e.response?.data || e.message);
+    res.status(500).json({ error: 'Failed to get response from OpenAI', details: e.message });
   }
 });
 
