@@ -41,7 +41,7 @@ const Docs: React.FC = () => {
   };
 
   return (
-    <div className="docs-page" style={{ maxWidth: 800, margin: '40px auto', background: '#1c1c27', borderRadius: 16, boxShadow: '0 2px 16px #181818', padding: 32, color: '#fff' }}>
+    <div className="docs-page" style={{ maxWidth: '100%', margin: '20px auto', background: '#1c1c27', borderRadius: 16, boxShadow: '0 2px 16px #181818', padding: 32, color: '#fff' }}>
       <h2 style={{ color: '#eebbc3', fontWeight: 700 }}>Web Documentation Search</h2>
       <div style={{ marginBottom: 16 }}>
         <span style={{ color: '#b8c1ec', marginRight: 8 }}>Try these examples:</span>

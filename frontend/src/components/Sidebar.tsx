@@ -15,12 +15,10 @@ const navLinks: NavLink[] = [
   { to: '/projects', label: 'Projects', icon: FaFolderOpen },
   { to: '/docs', label: 'Docs', icon: FaBook },
   { to: '/learning', label: 'Learning', icon: FaGraduationCap },
-  { to: '/team', label: 'Team', icon: FaUsers },
   { to: '/insights', label: 'Insights', icon: FaChartLine },
   { to: '/search', label: 'Search', icon: FaSearch },
   { to: '/integrations', label: 'Integrations', icon: FaPuzzlePiece },
   { to: '/notifications', label: 'Notifications', icon: FaBell },
-  { to: '/settings', label: 'Settings', icon: FaCog },
 ];
 
 type SidebarProps = {

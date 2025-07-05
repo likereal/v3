@@ -24,6 +24,8 @@ function setTodayHours(hours: number) {
   localStorage.setItem(HOURS_KEY, JSON.stringify({ date: getToday(), hours }));
 }
 
+const PLACEHOLDER_AVATAR = 'https://www.gstatic.com/youtube/img/originals/promo/ytr-logo-for-search_96x96.png';
+
 const Learning: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
@@ -36,6 +38,7 @@ const Learning: React.FC = () => {
   const playerRef = useRef<any>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [lastTrackedTime, setLastTrackedTime] = useState(0);
+  const [channelAvatars, setChannelAvatars] = useState<{ [key: string]: string }>({});
 
   // Load state from localStorage on mount (only once)
   useEffect(() => {
@@ -215,8 +218,34 @@ const Learning: React.FC = () => {
     return 'just now';
   }
 
+  // Helper to fetch channel avatar
+  const fetchChannelAvatar = async (channelId: string) => {
+    if (!API_KEY || channelAvatars[channelId]) return;
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelId}&key=${API_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      const avatarUrl = data.items?.[0]?.snippet?.thumbnails?.default?.url;
+      if (avatarUrl) {
+        setChannelAvatars(prev => ({ ...prev, [channelId]: avatarUrl }));
+      }
+    } catch {}
+  };
+
+  // Fetch channel avatars for all results
+  useEffect(() => {
+    results.forEach((item: any) => {
+      const channelId = item.snippet.channelId;
+      if (channelId && !channelAvatars[channelId]) {
+        fetchChannelAvatar(channelId);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results]);
+
   return (
-    <div className="learning-page" style={{ maxWidth: 1100, margin: '40px auto', background: '#1c1c27', borderRadius: 16, boxShadow: '0 2px 16px #181818', padding: 32, color: '#fff' }}>
+    <div className="learning-page" style={{ maxWidth: 1100, margin: '20px auto', background: '#1c1c27', borderRadius: 16, boxShadow: '0 2px 16px #181818', padding: 32, color: '#fff' }}>
       <h2 style={{ fontWeight: 700, fontSize: 32, color: '#eebbc3', marginBottom: 8 }}>Learning Resources</h2>
       <p style={{ color: '#b8c1ec', marginBottom: 24 }}>Search for learning videos below:</p>
       <form onSubmit={handleSearch} style={{ display: 'flex', marginBottom: 32, background: '#232946', borderRadius: 8, padding: 8 }}>
@@ -252,7 +281,7 @@ const Learning: React.FC = () => {
         {results.map((item: any, idx: number) => {
           const { videoId } = item.id;
           const { title, channelTitle, publishedAt, thumbnails, channelId } = item.snippet;
-          const channelAvatar = `https://yt3.ggpht.com/ytc/${channelId}=s68-c-k-c0x00ffffff-no-rj`;
+          const channelAvatar = channelAvatars[channelId] || PLACEHOLDER_AVATAR;
           if (results.length === idx + 1) {
             // Last item: attach ref for infinite scroll
             return (
@@ -312,10 +341,10 @@ const Learning: React.FC = () => {
                     src={channelAvatar}
                     alt={channelTitle}
                     style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee', flexShrink: 0 }}
-                    onError={e => (e.currentTarget.src = 'https://www.gstatic.com/youtube/img/originals/promo/ytr-logo-for-search_96x96.png')}
+                    onError={e => (e.currentTarget.src = PLACEHOLDER_AVATAR)}
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 18, color: '#111', marginBottom: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+                    <div style={{ fontWeight: 600, fontSize: 18, color: '#fff', marginBottom: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
                     <div style={{ color: '#666', fontSize: 15, fontWeight: 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{channelTitle}</div>
                   </div>
                 </div>
@@ -380,10 +409,10 @@ const Learning: React.FC = () => {
                   src={channelAvatar}
                   alt={channelTitle}
                   style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee', flexShrink: 0 }}
-                  onError={e => (e.currentTarget.src = 'https://www.gstatic.com/youtube/img/originals/promo/ytr-logo-for-search_96x96.png')}
+                  onError={e => (e.currentTarget.src = PLACEHOLDER_AVATAR)}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 18, color: '#111', marginBottom: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+                  <div style={{ fontWeight: 600, fontSize: 18, color: '#fff', marginBottom: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
                   <div style={{ color: '#666', fontSize: 15, fontWeight: 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{channelTitle}</div>
                 </div>
               </div>

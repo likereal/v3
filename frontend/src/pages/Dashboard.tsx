@@ -16,11 +16,20 @@ const Dashboard: React.FC = () => {
   const [githubIssues, setGithubIssues] = useState<any[]>([]);
   const [githubLoading, setGithubLoading] = useState(false);
   const [githubError, setGithubError] = useState<string | null>(null);
+  const [githubClosedIssues, setGithubClosedIssues] = useState<any[]>([]);
+  const [githubClosedPRs, setGithubClosedPRs] = useState<any[]>([]);
+  const [repoDetails, setRepoDetails] = useState<any>(null);
+  const [recentCommits, setRecentCommits] = useState<any[]>([]);
+  const [contributors, setContributors] = useState<any[]>([]);
+  const [languages, setLanguages] = useState<any>({});
+  const [githubStatsLoading, setGithubStatsLoading] = useState(false);
 
   // Jira state for Tasks & Projects
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [jiraError, setJiraError] = useState<string | null>(null);
+  const [jiraUserStories, setJiraUserStories] = useState<any[]>([]);
+  const [jiraUserStoriesLoading, setJiraUserStoriesLoading] = useState(false);
 
   // Fetch GitHub issues if connected
   useEffect(() => {
@@ -39,26 +48,89 @@ const Dashboard: React.FC = () => {
     }
   }, [userInfo?.github]);
 
+  // Fetch additional GitHub repository data
+  useEffect(() => {
+    if (userInfo?.github) {
+      setGithubStatsLoading(true);
+      
+      // Fetch repository details, commits, contributors, and languages in parallel
+      Promise.all([
+        axios.get('http://localhost:5000/api/github/repo?owner=likereal&repo=v3'),
+        axios.get('http://localhost:5000/api/github/commits?owner=likereal&repo=v3'),
+        axios.get('http://localhost:5000/api/github/contributors?owner=likereal&repo=v3'),
+        axios.get('http://localhost:5000/api/github/languages?owner=likereal&repo=v3'),
+        axios.get('http://localhost:5000/api/github/issues?owner=likereal&repo=v3&state=closed'),
+        axios.get('http://localhost:5000/api/github/issues?owner=likereal&repo=v3&state=closed')
+      ])
+        .then(([repoRes, commitsRes, contributorsRes, languagesRes, closedIssuesRes, closedPRsRes]) => {
+          setRepoDetails(repoRes.data);
+          setRecentCommits(commitsRes.data || []);
+          setContributors(contributorsRes.data || []);
+          setLanguages(languagesRes.data || {});
+          setGithubClosedIssues(closedIssuesRes.data || []);
+          // Filter closed issues to get only pull requests
+          const closedPRs = closedPRsRes.data ? closedPRsRes.data.filter((issue: any) => issue.pull_request) : [];
+          setGithubClosedPRs(closedPRs);
+          console.log('GitHub Stats Data:', {
+            repoDetails: repoRes.data,
+            closedIssues: closedIssuesRes.data,
+            closedPRs: closedPRs,
+            closedPRsLength: closedPRs.length
+          });
+          setGithubStatsLoading(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch GitHub stats:', err);
+          setGithubStatsLoading(false);
+        });
+    }
+  }, [userInfo?.github]);
+
   // Function to fetch Jira issues
-  const fetchJiraIssues = useCallback(() => {
+  const fetchJiraData = useCallback(() => {
     if (!userInfo?.jira || !idToken) return;
     
     setJiraLoading(true);
+    setJiraUserStoriesLoading(true);
     setJiraError(null);
     
     // Get selected project from localStorage
     const selectedProject = localStorage.getItem('selectedJiraProject');
-    const url = selectedProject 
+    const issuesUrl = selectedProject 
       ? `http://localhost:5000/api/jira/issues?project=${encodeURIComponent(selectedProject)}`
       : 'http://localhost:5000/api/jira/issues';
+    const userStoriesUrl = selectedProject 
+      ? `http://localhost:5000/api/jira/user-stories?project=${encodeURIComponent(selectedProject)}`
+      : 'http://localhost:5000/api/jira/user-stories';
     
-    axios.get(url, {
-      headers: { Authorization: `Bearer ${idToken}` },
-      withCredentials: true
-    })
-      .then(res => {
-        setJiraIssues(res.data as any[]);
+    // Fetch both issues and user stories
+    Promise.all([
+      axios.get(issuesUrl, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        withCredentials: true
+      }),
+      axios.get(userStoriesUrl, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        withCredentials: true
+      })
+    ])
+      .then(([issuesRes, userStoriesRes]) => {
+        // Handle issues response
+        if (Array.isArray(issuesRes.data)) {
+          setJiraIssues(issuesRes.data);
+        } else {
+          setJiraIssues(issuesRes.data.issues || []);
+        }
+        
+        // Handle user stories response
+        if (Array.isArray(userStoriesRes.data)) {
+          setJiraUserStories(userStoriesRes.data);
+        } else {
+          setJiraUserStories(userStoriesRes.data.userStories || []);
+        }
+        
         setJiraLoading(false);
+        setJiraUserStoriesLoading(false);
       })
       .catch(err => {
         if (err.response?.status === 401) {
@@ -66,28 +138,29 @@ const Dashboard: React.FC = () => {
         } else if (err.response?.status === 403) {
           setJiraError('Insufficient Jira permissions. Please check your account settings.');
         } else {
-          setJiraError('Failed to fetch Jira issues');
+          setJiraError('Failed to fetch Jira data');
         }
         setJiraLoading(false);
+        setJiraUserStoriesLoading(false);
       });
   }, [userInfo?.jira, idToken]);
 
-  // Fetch Jira issues if connected
+  // Fetch Jira data if connected
   useEffect(() => {
-    fetchJiraIssues();
-  }, [fetchJiraIssues]);
+    fetchJiraData();
+  }, [fetchJiraData]);
 
   // Listen for changes in localStorage (project selection)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'selectedJiraProject') {
-        fetchJiraIssues();
+        fetchJiraData();
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [fetchJiraIssues]);
+  }, [fetchJiraData]);
 
   if (authLoading) return <div>Loading...</div>;
 
@@ -103,9 +176,9 @@ const Dashboard: React.FC = () => {
             ) : (
               <div>
                 <div style={{ marginBottom: 16 }}>
-                  <b>Project Issues</b>
+                  <b>Project Items</b>
                   <div style={{ fontSize: '0.9em', color: '#aaa', marginTop: 4 }}>
-                    {jiraIssues.length} issues
+                    {jiraIssues.length + jiraUserStories.length} items
                     {(() => {
                       const selectedProject = localStorage.getItem('selectedJiraProject');
                       return selectedProject ? ` from project ${selectedProject}` : ' (all assigned)';
@@ -113,75 +186,100 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
                 
-                {jiraIssues.length === 0 ? (
+                {(jiraIssues.length === 0 && jiraUserStories.length === 0) ? (
                   <div style={{ color: '#888', textAlign: 'center', padding: '1rem' }}>
-                    No issues found.
+                    No items found.
                   </div>
                 ) : (
                   <div className="jira-issues-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    {jiraIssues.slice(0, 12).map(issue => (
-                      <div key={issue.id} className="card" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ fontWeight: '600', color: '#eebbc3' }}>
-                              {issue.key}
-                            </div>
-                            {issue.fields.issuetype && (
-                              <span style={{ 
-                                background: '#2a2a3e', 
-                                color: '#b8c1ec', 
-                                padding: '2px 6px', 
-                                borderRadius: '4px',
-                                fontSize: '0.7em',
-                                fontWeight: '500'
-                              }}>
-                                {issue.fields.issuetype.name}
-                              </span>
-                            )}
-                            {issue.fields.priority && (
-                              <span style={{ 
-                                background: issue.fields.priority.name === 'High' ? '#dc3545' : 
-                                           issue.fields.priority.name === 'Medium' ? '#ffd700' : '#6c757d',
-                                color: '#fff', 
-                                padding: '2px 6px', 
-                                borderRadius: '4px',
-                                fontSize: '0.7em',
+                    {[...jiraIssues, ...jiraUserStories]
+                      .sort((a, b) => new Date(b.fields.updated).getTime() - new Date(a.fields.updated).getTime())
+                      .slice(0, 12)
+                      .map(item => {
+                        const isUserStory = item.fields.issuetype?.name === 'Story';
+                        const keyColor = isUserStory ? '#9C27B0' : '#eebbc3';
+                        return (
+                          <div key={item.id} className="card" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div 
+                                  style={{ 
+                                    fontWeight: '600', 
+                                    color: keyColor, 
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline'
+                                  }}
+                                  onClick={() => {
+                                    // Open Jira issue in new tab
+                                    const selectedProject = localStorage.getItem('selectedJiraProject');
+                                    if (selectedProject) {
+                                      window.open(`https://v3hackathon.atlassian.net/browse/${item.key}`, '_blank');
+                                    } else {
+                                      // Fallback to general Jira dashboard
+                                      window.open('https://app.atlassian.com', '_blank');
+                                    }
+                                  }}
+                                  title="Click to open in Jira"
+                                >
+                                  {item.key}
+                                </div>
+                                {item.fields.issuetype && (
+                                  <span style={{ 
+                                    background: '#2a2a3e', 
+                                    color: '#b8c1ec', 
+                                    padding: '2px 6px', 
+                                    borderRadius: '4px',
+                                    fontSize: '0.7em',
+                                    fontWeight: '500'
+                                  }}>
+                                    {item.fields.issuetype.name}
+                                  </span>
+                                )}
+                                {item.fields.priority && (
+                                  <span style={{ 
+                                    background: item.fields.priority.name === 'High' ? '#dc3545' : 
+                                               item.fields.priority.name === 'Medium' ? '#ffd700' : '#6c757d',
+                                    color: '#fff', 
+                                    padding: '2px 6px', 
+                                    borderRadius: '4px',
+                                    fontSize: '0.7em',
+                                    fontWeight: '600'
+                                  }}>
+                                    {item.fields.priority.name}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ 
+                                background: item.fields.status.statusCategory?.colorName === 'green' ? '#43d17a' : 
+                                           item.fields.status.statusCategory?.colorName === 'yellow' ? '#ffd700' : 
+                                           item.fields.status.statusCategory?.colorName === 'red' ? '#dc3545' : '#6c757d',
+                                color: '#fff',
+                                padding: '3px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.75em',
                                 fontWeight: '600'
                               }}>
-                                {issue.fields.priority.name}
-                              </span>
-                            )}
+                                {item.fields.status.name}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: '0.9em', marginBottom: '6px', lineHeight: '1.4' }}>
+                              {item.fields.summary}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8em', color: '#aaa' }}>
+                              <div>
+                                {item.fields.assignee ? (
+                                  <span>👤 {item.fields.assignee.displayName}</span>
+                                ) : (
+                                  <span style={{ color: '#ff6b6b' }}>⚠️ Unassigned</span>
+                                )}
+                              </div>
+                              <div>
+                                Updated: {item.fields.updated ? new Date(item.fields.updated).toLocaleDateString() : 'N/A'}
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ 
-                            background: issue.fields.status.statusCategory?.colorName === 'green' ? '#43d17a' : 
-                                       issue.fields.status.statusCategory?.colorName === 'yellow' ? '#ffd700' : 
-                                       issue.fields.status.statusCategory?.colorName === 'red' ? '#dc3545' : '#6c757d',
-                            color: '#fff',
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.75em',
-                            fontWeight: '600'
-                          }}>
-                            {issue.fields.status.name}
-                          </div>
-                        </div>
-                        <div style={{ fontSize: '0.9em', marginBottom: '6px', lineHeight: '1.4' }}>
-                          {issue.fields.summary}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8em', color: '#aaa' }}>
-                          <div>
-                            {issue.fields.assignee ? (
-                              <span>👤 {issue.fields.assignee.displayName}</span>
-                            ) : (
-                              <span style={{ color: '#ff6b6b' }}>⚠️ Unassigned</span>
-                            )}
-                          </div>
-                          <div>
-                            Updated: {issue.fields.updated ? new Date(issue.fields.updated).toLocaleDateString() : 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                        );
+                      })}
                   </div>
                 )}
                 
@@ -201,7 +299,7 @@ const Dashboard: React.FC = () => {
                   >
                     View All in Jira
                   </button>
-                  <button onClick={fetchJiraIssues} className="MuiButton-root">Refresh</button>
+                  <button onClick={fetchJiraData} className="MuiButton-root">Refresh</button>
                 </div>
               </div>
             )
@@ -249,29 +347,133 @@ const Dashboard: React.FC = () => {
         </Widget>
         <Widget title="Code Insights">
           {user && userInfo?.github ? (
-            githubLoading ? (
+            (githubLoading || githubStatsLoading) ? (
               <div>Loading GitHub repo details...</div>
             ) : githubError ? (
               <div style={{ color: 'red' }}>{githubError}</div>
             ) : (
               <div>
+                {/* Repository Overview */}
                 <div style={{ marginBottom: 8 }}>
-                  <b>Repo:</b> likereal/v3
+                  <b>Repository:</b> {repoDetails?.full_name || 'likereal/v3'}
                 </div>
-                <div style={{ marginBottom: 8 }}>
-                  <b>Open Issues:</b> {githubIssues.filter(issue => !issue.pull_request).length}
+                {repoDetails && (
+                  <div style={{ marginBottom: 12, padding: '8px', background: '#2a2a3e', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span>⭐ {repoDetails.stargazers_count || 0} stars</span>
+                      <span>🔀 {repoDetails.forks_count || 0} forks</span>
+                      <span>👀 {repoDetails.watchers_count || 0} watchers</span>
+                    </div>
+                    <div style={{ fontSize: '0.9em', color: '#aaa' }}>
+                      {repoDetails.description || 'No description available'}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Language Breakdown */}
+                {Object.keys(languages).length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <b>Languages:</b>
+                    <div style={{ marginTop: 4 }}>
+                      {Object.entries(languages)
+                        .sort(([,a], [,b]) => (b as number) - (a as number))
+                        .slice(0, 5)
+                        .map(([lang, bytes]) => (
+                          <span key={lang} style={{ 
+                            display: 'inline-block', 
+                            background: '#2a2a3e', 
+                            padding: '2px 6px', 
+                            margin: '2px', 
+                            borderRadius: '4px',
+                            fontSize: '0.8em'
+                          }}>
+                            {lang}: {Math.round((bytes as number) / 1024)}KB
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Recent Activity */}
+                {recentCommits.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <b>Recent Commits:</b>
+                    <div style={{ marginTop: 4, maxHeight: '120px', overflowY: 'auto' }}>
+                      {recentCommits.slice(0, 3).map((commit, idx) => (
+                        <div key={idx} style={{ marginBottom: 4, fontSize: '0.85em' }}>
+                          <a href={commit.html_url} target="_blank" rel="noopener noreferrer" style={{ color: '#4CAF50', textDecoration: 'underline' }}>
+                            {commit.sha.substring(0, 6)}: {commit.commit.message.split('\n')[0]}
+                          </a>
+                          <div style={{ color: '#aaa', fontSize: '0.8em' }}>
+                            by {commit.commit.author.name} • {new Date(commit.commit.author.date).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Contributors */}
+                {contributors.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <b>Top Contributors:</b>
+                    <div style={{ marginTop: 4 }}>
+                      {contributors.slice(0, 3).map((contributor, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                          <img 
+                            src={contributor.avatar_url} 
+                            alt={contributor.login}
+                            style={{ width: '16px', height: '16px', borderRadius: '50%', marginRight: '6px' }}
+                          />
+                          <span style={{ fontSize: '0.85em' }}>{contributor.login}</span>
+                          <span style={{ fontSize: '0.75em', color: '#aaa', marginLeft: 'auto' }}>
+                            {contributor.contributions} commits
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Issue/PR Stats */}
+                <div style={{ marginBottom: 12, padding: '8px', background: '#2a2a3e', borderRadius: '6px' }}>
+                  <div style={{ marginBottom: 6, fontWeight: 'bold' }}>Issues & Pull Requests</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85em' }}>
+                    <div>
+                      <span style={{ color: '#4CAF50' }}>●</span> Open Issues: {githubIssues.filter(issue => !issue.pull_request).length}
+                    </div>
+                    <div>
+                      <span style={{ color: '#ff6b6b' }}>●</span> Closed Issues: {githubClosedIssues.filter(issue => !issue.pull_request).length}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85em', marginTop: 4 }}>
+                    <div>
+                      <span style={{ color: '#4CAF50' }}>●</span> Open PRs: {githubIssues.filter(issue => issue.pull_request).length}
+                    </div>
+                    <div>
+                      <span style={{ color: '#ff6b6b' }}>●</span> Closed PRs: {githubClosedPRs ? githubClosedPRs.length : 0}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85em', marginTop: 4, paddingTop: 4, borderTop: '1px solid #444' }}>
+                    <div>
+                      <b>Total Issues:</b> {githubIssues.filter(issue => !issue.pull_request).length + githubClosedIssues.filter(issue => !issue.pull_request).length}
+                    </div>
+                    <div>
+                      <b>Total PRs:</b> {githubIssues.filter(issue => issue.pull_request).length + (githubClosedPRs ? githubClosedPRs.length : 0)}
+                    </div>
+                  </div>
                 </div>
-                <div style={{ marginBottom: 8 }}>
-                  <b>Open PRs:</b> {githubIssues.filter(issue => issue.pull_request).length}
-                </div>
-                {/* Build Status Placeholder */}
-                <div style={{ marginBottom: 8 }}>
-                  <b>Build Status:</b> <span style={{ color: '#fff' }}>Coming soon</span>
-                </div>
-                {/* Code Metrics Placeholder */}
-                <div style={{ marginBottom: 8 }}>
-                  <b>Code Metrics:</b> <span style={{ color: '#fff' }}>Coming soon</span>
-                </div>
+                
+                {/* Repository Stats */}
+                {repoDetails && (
+                  <div style={{ marginBottom: 12, padding: '8px', background: '#2a2a3e', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85em' }}>
+                      <span>📁 {repoDetails.size || 0} KB</span>
+                      <span>📅 Updated {repoDetails.updated_at ? new Date(repoDetails.updated_at).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                  </div>
+                )}
+                
                 {/* PRs List */}
                 <div style={{ marginTop: 16 }}>
                   <b>Pull Requests</b>
@@ -471,9 +673,6 @@ const Dashboard: React.FC = () => {
               </div>
             );
           })()}
-        </Widget>
-        <Widget title="Team Progress">
-          <p>Track team activity, roles, and progress.</p>
         </Widget>
       </div>
     </>
